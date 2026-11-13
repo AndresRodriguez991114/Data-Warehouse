@@ -48,7 +48,7 @@ const graphData = {
   ]
 };
 
-test("la página presenta gráficas y decisiones desde Supabase y sondea cada cinco minutos", { skip: !chromium || !fs.existsSync(browserPath) }, async () => {
+test("la página presenta gráficas y decisiones desde Base de datosy sondea cada cinco minutos", { skip: !chromium || !fs.existsSync(browserPath) }, async () => {
   const browser = await chromium.launch({ executablePath: browserPath, headless: true });
   try {
     const context = await browser.newContext({ reducedMotion: "reduce" });
@@ -113,7 +113,7 @@ test("la página presenta gráficas y decisiones desde Supabase y sondea cada ci
   } finally { await browser.close(); }
 });
 
-test("explica cómo actualizar Supabase cuando la caché devuelve el formato anterior", { skip: !chromium || !fs.existsSync(browserPath) }, async () => {
+test("explica cómo actualizar Base de datoscuando la caché devuelve el formato anterior", { skip: !chromium || !fs.existsSync(browserPath) }, async () => {
   const browser = await chromium.launch({ executablePath: browserPath, headless: true });
   try {
     const page = await browser.newPage();

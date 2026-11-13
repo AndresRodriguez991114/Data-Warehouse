@@ -28,7 +28,7 @@
     if (!config || !config.supabaseUrl || !config.supabasePublishableKey) throw new Error("Falta la URL o la clave publicable.");
     url = new URL(config.supabaseUrl);
   } catch (error) {
-    status.textContent = "Configura la URL de Supabase y una clave publicable válida.";
+    status.textContent = "Configura la URL de Base de datosy una clave publicable válida.";
     return;
   }
   if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co") || !isPublicKey(config.supabasePublishableKey)) {
@@ -52,7 +52,7 @@
     element.textContent = value === null || value === undefined ? "" : String(value);
     return element;
   };
-  const cacheSchemaError = "Supabase está devolviendo una caché con el formato anterior. En SQL Editor ejecuta sql/supabase/SUPABASE-GRAFICAS.sql y luego SELECT public.pgc_actualizar_graficas_energia_2026();";
+  const cacheSchemaError = "Base de datosestá devolviendo una caché con el formato anterior. En SQL Editor ejecuta sql/supabase/SUPABASE-GRAFICAS.sql y luego SELECT public.pgc_actualizar_graficas_energia_2026();";
 
   function validateCache(data) {
     if (!data || data.estado !== "ok" || !Array.isArray(data.grupos) || !Array.isArray(data.histogramas) || !Array.isArray(data.horas) || !Array.isArray(data.ubicaciones) || !data.totales) {
@@ -291,7 +291,7 @@
     if (metricElements.every(element => !element)) return;
     if (metricElements.some(element => !element)) throw new Error("Faltan elementos de indicadores en la página.");
     const counts = ["mediciones", "dispositivos", "ubicaciones", "generacion_no_nula", "consumo_no_nulo", "bateria_no_nula"].map(key => Number(totals[key]));
-    if (counts.some(value => !Number.isSafeInteger(value) || value < 0)) throw new Error("Los conteos de Supabase no son válidos.");
+    if (counts.some(value => !Number.isSafeInteger(value) || value < 0)) throw new Error("Los conteos de Base de datosno son válidos.");
     document.getElementById("metric-mediciones").textContent = whole.format(counts[0]);
     document.getElementById("metric-dispositivos").textContent = whole.format(counts[1]);
     document.getElementById("metric-ubicaciones").textContent = whole.format(counts[2]);
@@ -500,7 +500,7 @@
         headers: { apikey: config.supabasePublishableKey, "Content-Type": "application/json" },
         body: "{}"
       });
-      if (!response.ok) throw new Error(`Supabase respondió ${response.status}.`);
+      if (!response.ok) throw new Error(`Base de datosrespondió ${response.status}.`);
       const data = await response.json();
       if (data.estado !== "ok") throw new Error("La caché aún no ha sido calculada.");
       validateCache(data);
