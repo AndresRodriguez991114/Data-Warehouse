@@ -31,6 +31,7 @@
 
   const number = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
   const whole = new Intl.NumberFormat("es-CO");
+  const POLL_INTERVAL_MS = 300000;
   const setText = (id, value) => { document.getElementById(id).textContent = value; };
   const finiteNumber = value => value === null || value === undefined ? null : Number(value);
   const display = (value, unit) => Number.isFinite(value) ? `${number.format(value)} ${unit}` : "Sin datos";
@@ -74,7 +75,7 @@
   let lastRequest = 0;
   let pending = false;
   async function refresh() {
-    if (!client || pending || Date.now() - lastRequest < 60000) return;
+    if (!client || pending || Date.now() - lastRequest < POLL_INTERVAL_MS) return;
     pending = true;
     lastRequest = Date.now();
     try {
@@ -96,7 +97,7 @@
       await refresh();
       client.channel("pgc-energia-publico").on("broadcast", { event: "mediciones-actualizadas" }, () => { if (!document.hidden) refresh(); }).subscribe();
       document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
-      window.setInterval(() => { if (!document.hidden) refresh(); }, 60000);
+      window.setInterval(() => { if (!document.hidden) refresh(); }, POLL_INTERVAL_MS);
     } catch (error) {
       status.textContent = "No se pudo conectar con Supabase. Se muestran los valores históricos.";
     }

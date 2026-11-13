@@ -8,7 +8,7 @@ Sitio estático del proyecto de Data Warehouse, con un dashboard público, consu
 - [`docs/entrega/`](docs/entrega/): guía de entrega, instrucciones de Power BI, informe técnico y guion del video.
 - [`docs/despliegue/`](docs/despliegue/): configuración de Supabase y despliegue en Vercel.
 - [`sql/analisis/`](sql/analisis/): diagnóstico y consultas analíticas.
-- [`sql/supabase/`](sql/supabase/): scripts activos de caché, gráficas y notificaciones.
+- [`sql/supabase/`](sql/supabase/): scripts de caché, gráficas y actualización programada.
 - [`tests/`](tests/): pruebas de agregados, navegador, SQL y dashboard.
 
 ## Documentación principal
@@ -19,23 +19,19 @@ Sitio estático del proyecto de Data Warehouse, con un dashboard público, consu
 - [Guion del video](docs/entrega/GUION-VIDEO.md)
 - [Conectar Supabase y Vercel](docs/despliegue/CONECTAR-SUPABASE-VERCEL.md)
 
-## Documentación de gráficas
+## Documentación del dashboard
 
-- [Clasificación de gráficas](docs/CLASIFICACION-GRAFICAS.md) - Tipos y organización de gráficas
-- [Guía de gráficas clasificadas](GUIA-GRAFICAS-CLASIFICADAS.md) - Cómo usar e interpretar las gráficas
-- [Resumen visual](RESUMEN-GRAFICAS.md) - Estructura y matriz de gráficas
+- [Guía de gráficas](GUIA-GRAFICAS-CLASIFICADAS.md) - Visualizaciones, interpretación y límites
+- [Resumen de gráficas](RESUMEN-GRAFICAS.md) - Agregaciones disponibles
+- [Checklist de implementación](CHECKLIST-IMPLEMENTACION.md) - Código listo y activación pendiente en Supabase
+- [Resumen de implementación](IMPLEMENTACION-RESUMEN.md) - Componentes y pruebas
 
 ## Acceso a gráficas
 
 - **Página principal:** [index.html](index.html)
 - **Gráficas clasificadas:** [graficas-clasificadas.html](graficas-clasificadas.html)
 
-### Categorías de gráficas disponibles
-
-1. **Gráficas básicas y de comparación** - Comparan valores entre categorías
-2. **Gráficas de distribución y frecuencia** - Muestran cómo se distribuyen los datos
-3. **Gráficas de relación y composición** - Muestran tendencias y evolución temporal
-4. **Gráficas especializadas** - Análisis técnicos y combinaciones complejas
+El dashboard usa solo funciones RPC de Supabase que devuelven cachés agregadas. Cron y el navegador están configurados para un intervalo de cinco minutos; la activación del trabajo de Cron debe realizarse en el proyecto de Supabase.
 
 ## Pruebas
 

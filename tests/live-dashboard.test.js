@@ -10,7 +10,7 @@ const source = fs.readFileSync("live-dashboard.js", "utf8").replace(
 
 function runDashboard(key, response) {
   const elements = new Map();
-  let now = 100000;
+  let now = 1000000;
   let calls = 0;
   let onBroadcast;
   let timer;
@@ -53,7 +53,7 @@ test("rechaza claves secretas antiguas", () => {
   assert.equal(dashboard.getCalls(), 0);
 });
 
-test("actualiza valores, denominadores y limita consultas", async () => {
+test("actualiza valores, denominadores y limita consultas a cinco minutos", async () => {
   const dashboard = runDashboard("sb_publishable_test", { data: summary, error: null });
   await new Promise(setImmediate);
   assert.equal(dashboard.elements.get("metric-generacion").textContent, "80,54 Wh");
@@ -61,7 +61,7 @@ test("actualiza valores, denominadores y limita consultas", async () => {
   assert.equal(dashboard.elements.get("bar-consumo").style.width, "72.75%");
   dashboard.broadcast();
   assert.equal(dashboard.getCalls(), 1);
-  dashboard.advance(60000);
+  dashboard.advance(300000);
   dashboard.tick();
   await new Promise(setImmediate);
   assert.equal(dashboard.getCalls(), 2);

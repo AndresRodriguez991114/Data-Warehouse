@@ -7,7 +7,11 @@
   const chartsContainer = document.getElementById("exploration-charts");
   const knowledgeList = document.getElementById("knowledge-list");
   const decisionList = document.getElementById("decision-list");
-  if (!status || !content || !monthSelect || !chartsContainer || !knowledgeList || !decisionList) return;
+  if (!status || !content || !monthSelect || !chartsContainer) return;
+  if (!api) {
+    status.textContent = "No se pudo inicializar el análisis de gráficas.";
+    return;
+  }
 
   function isPublicKey(key) {
     if (key.startsWith("sb_publishable_")) return true;
@@ -74,8 +78,8 @@
       specs: [
         ["Generación promedio por mes", "Promedio ponderado por mediciones no nulas.", "groupAverage", ["mes", "generacion"], "line", "Wh por medición", "#176d52"],
         ["Consumo promedio por mes", "Promedio ponderado por mediciones no nulas.", "groupAverage", ["mes", "consumo"], "line", "Wh por medición", "#ca6d39"],
-        ["Generación total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período.", "hourSum", "generacion", "line", "Wh acumulados", "#176d52", "grafica-generacion-hora"],
-        ["Consumo total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período.", "hourSum", "consumo", "line", "Wh acumulados", "#ca6d39", "grafica-consumo-hora"]
+        ["Generación total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período y según la zona de fecha_hora.", "hourSum", "generacion", "line", "Wh acumulados", "#176d52", "grafica-generacion-hora"],
+        ["Consumo total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período y según la zona de fecha_hora.", "hourSum", "consumo", "line", "Wh acumulados", "#ca6d39", "grafica-consumo-hora"]
       ]
     }
   };
@@ -239,6 +243,10 @@
   }
 
   function renderMetrics(totals) {
+    const metricIds = ["metric-mediciones", "metric-dispositivos", "metric-ubicaciones", "metric-generacion", "metric-consumo", "metric-bateria"];
+    const metricElements = metricIds.map(id => document.getElementById(id));
+    if (metricElements.every(element => !element)) return;
+    if (metricElements.some(element => !element)) throw new Error("Faltan elementos de indicadores en la página.");
     const counts = ["mediciones", "dispositivos", "ubicaciones", "generacion_no_nula", "consumo_no_nulo", "bateria_no_nula"].map(key => Number(totals[key]));
     if (counts.some(value => !Number.isSafeInteger(value) || value < 0)) throw new Error("Los conteos de Supabase no son válidos.");
     document.getElementById("metric-mediciones").textContent = whole.format(counts[0]);
@@ -268,6 +276,7 @@
   }
 
   function renderKnowledge(items) {
+    if (!knowledgeList) return;
     knowledgeList.replaceChildren();
     items.forEach((item, index) => {
       const details = document.createElement("details");
@@ -280,6 +289,7 @@
   }
 
   function renderDecisions(items) {
+    if (!decisionList) return;
     decisionList.replaceChildren();
     items.forEach((item, index) => {
       const article = document.createElement("article");
@@ -323,7 +333,7 @@
         fields: [
           ["Generación máxima", peakGenerationHour ? `${peakGenerationHour.label}:00 · ${number.format(peakGenerationHour.value)} Wh en el período` : "Sin datos suficientes"],
           ["Consumo máximo", peakConsumptionHour ? `${peakConsumptionHour.label}:00 · ${number.format(peakConsumptionHour.value)} Wh en el período` : "Sin datos suficientes"],
-          ["Procedimiento", "Suma la energía por hora local registrada en fecha_hora; no es un promedio diario."],
+          ["Procedimiento", "Suma la energía por hora registrada en fecha_hora, según la zona horaria configurada en Supabase; no es un promedio diario."],
           ["Limitación", "Las diferencias dependen de la cantidad de días y mediciones disponibles en cada hora."]
         ]
       });

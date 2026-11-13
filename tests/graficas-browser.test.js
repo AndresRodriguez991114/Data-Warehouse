@@ -11,26 +11,82 @@ try { chromium = require(path.join(dependencies, "playwright-core")).chromium; }
 catch (error) { chromium = null; }
 const browserPath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
-test("la página crea comparativos exactos y retroalimentación desde los agregados de BD", { skip: !chromium || !fs.existsSync(browserPath) }, async () => {
+const graphData = {
+  estado: "ok",
+  calculado_en: "2026-07-28T12:00:00Z",
+  primera_medicion: "2026-01-01T00:00:00",
+  ultima_medicion: "2026-01-31T23:59:00",
+  mediciones_total: 51,
+  totales: {
+    mediciones: 51,
+    dispositivos: 2,
+    ubicaciones: 2,
+    generacion_no_nula: 51,
+    consumo_no_nulo: 51,
+    bateria_no_nula: 51,
+    generacion_promedio_wh: 10,
+    consumo_promedio_wh: 15,
+    bateria_promedio_pct: 53,
+    generacion_suma: 510,
+    consumo_suma: 765
+  },
+  grupos: [
+    { mes: "2026-01-01", condicion: "Soleado", franja: "Día", mediciones: 30, consumo_no_nulo: 30, consumo_suma: 300, generacion_no_nula: 30, generacion_suma: 360 },
+    { mes: "2026-01-01", condicion: "Nublado", franja: "Noche", mediciones: 21, consumo_no_nulo: 21, consumo_suma: 465, generacion_no_nula: 21, generacion_suma: 150 }
+  ],
+  horas: [
+    { hora: 0, mediciones: 51, consumo_no_nulo: 51, consumo_suma: 765, generacion_no_nula: 51, generacion_suma: 510 }
+  ],
+  ubicaciones: [
+    { dimension: "estrato", categoria: "2", mediciones: 25, consumo_no_nulo: 25, consumo_suma: 450, generacion_no_nula: 25, generacion_suma: 255 },
+    { dimension: "estrato", categoria: "3", mediciones: 26, consumo_no_nulo: 26, consumo_suma: 315, generacion_no_nula: 26, generacion_suma: 255 }
+  ],
+  histogramas: [
+    { variable: "consumo", tramo: 1, mediciones: 51 },
+    { variable: "generacion", tramo: 2, mediciones: 51 },
+    { variable: "bateria", tramo: 2, mediciones: 51 }
+  ]
+};
+
+test("la página presenta gráficas y decisiones desde Supabase y sondea cada cinco minutos", { skip: !chromium || !fs.existsSync(browserPath) }, async () => {
   const browser = await chromium.launch({ executablePath: browserPath, headless: true });
   try {
     const context = await browser.newContext({ reducedMotion: "reduce" });
     const page = await context.newPage();
+    await page.addInitScript(() => {
+      window.__intervals = [];
+      const setInterval = window.setInterval.bind(window);
+      window.setInterval = (callback, delay, ...args) => {
+        window.__intervals.push(delay);
+        return setInterval(callback, delay, ...args);
+      };
+    });
+    await page.route("https://zlvqxkezmlswzfozlhwy.supabase.co/rest/v1/rpc/pgc_graficas_publicas_2026", route => route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(graphData)
+    }));
+    await page.route("https://cdn.jsdelivr.net/npm/chart.js@4.4.8/auto/+esm", route => route.fulfill({
+      status: 200,
+      contentType: "application/javascript",
+      body: "export default class Chart { constructor(canvas, config) { this.canvas = canvas; this.config = config; } destroy() {} }"
+    }));
     await page.goto(pathToFileURL(path.resolve("index.html")).href);
     const logoLoaded = await page.locator('img[src="Logo.png"]').evaluateAll(images => Promise.all(images.map(image => image.decode().then(() => image.naturalWidth > 0))));
     assert.deepEqual(logoLoaded, [true]);
     await page.locator("#knowledge-list details").first().waitFor({ state: "visible" });
-    assert.equal(await page.locator("#knowledge-list details").count(), 5);
+    assert.equal(await page.locator("#knowledge-list details").count(), 4);
     assert.equal(await page.locator("#decision-list article").count(), 4);
-    assert.equal(await page.locator("#database-charts .comparison-chart").count(), 6);
-    assert.match(await page.locator("#dashboard").innerText(), /1\.003\.209/);
-    assert.match(await page.locator("#database-charts").innerText(), /4\.505\.812,10 Wh/);
-    assert.match(await page.locator("#database-charts").innerText(), /205\.296\.044,80 Wh/);
-    assert.match(await page.locator("#database-charts").innerText(), /119,38 Wh\/medición/);
-    assert.match(await page.locator("#dashboard").innerText(), /249\.956/);
-    assert.match(await page.locator("#decision-list").innerText(), /1,24 %/);
-    assert.doesNotMatch(await page.locator("#dashboard").innerText(), /CAPTURA ESTÁTICA \/ POWER BI/i);
-    assert.doesNotMatch(await page.locator("main").innerText(), /Supabase/i);
+    assert.equal(await page.locator("#exploration-charts .exploration-chart").count(), 12);
+    assert.equal(await page.locator("#combined-chart .exploration-chart").count(), 1);
+    assert.match(await page.locator("#metric-mediciones").innerText(), /51/);
+    assert.match(await page.locator("#metric-generacion").innerText(), /10 Wh\/medición/);
+    assert.match(await page.locator("#exploration-status").innerText(), /cada 5 minutos/);
+    assert.match(await page.locator("#grafica-generacion-hora").textContent(), /00/);
+    assert.match(await page.locator("#grafica-consumo-ubicacion").innerText(), /Consumo total por estrato/);
+    assert.match(await page.locator("#decision-list").innerText(), /66,67 %/);
+    assert.deepEqual(await page.evaluate(() => window.__intervals), [300000]);
+    assert.doesNotMatch(await page.locator("main").innerText(), /SQL Server verificados en SSMS|CAPTURA ESTÁTICA \/ POWER BI/i);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       const overflow = await page.evaluate(() => ({
