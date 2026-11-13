@@ -69,7 +69,7 @@ test("la página presenta gráficas y decisiones desde Supabase y sondea cada ci
     await page.route("https://cdn.jsdelivr.net/npm/chart.js@4.4.8/auto/+esm", route => route.fulfill({
       status: 200,
       contentType: "application/javascript",
-      body: "export default class Chart { constructor(canvas, config) { this.canvas = canvas; this.config = config; } destroy() {} }"
+      body: "export default class Chart { constructor(canvas, config) { (window.__charts ||= []).push(config); } reset() { window.__replays = (window.__replays || 0) + 1; } update() {} destroy() {} }"
     }));
     await page.goto(pathToFileURL(path.resolve("index.html")).href);
     const logoLoaded = await page.locator('img[src="Logo.png"]').evaluateAll(images => Promise.all(images.map(image => image.decode().then(() => image.naturalWidth > 0))));
@@ -86,6 +86,11 @@ test("la página presenta gráficas y decisiones desde Supabase y sondea cada ci
     assert.match(await page.locator("#grafica-consumo-ubicacion").innerText(), /Consumo total por estrato/);
     assert.match(await page.locator("#decision-list").innerText(), /66,67 %/);
     assert.deepEqual(await page.evaluate(() => window.__intervals), [300000]);
+    const reducedCharts = await page.evaluate(() => window.__charts);
+    assert.ok(reducedCharts.every(chart => chart.options.animation === false));
+    const climate = reducedCharts.find(chart => chart.data.labels.includes("Soleado"));
+    assert.equal(new Set(climate.data.datasets[0].backgroundColor).size, 2);
+    assert.deepEqual(climate.data.datasets[0].data, [21, 30]);
     assert.doesNotMatch(await page.locator("main").innerText(), /SQL Server verificados en SSMS|CAPTURA ESTÁTICA \/ POWER BI/i);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
@@ -96,6 +101,14 @@ test("la página presenta gráficas y decisiones desde Supabase y sondea cada ci
       }));
       assert.equal(overflow.scrollWidth > overflow.width, false, JSON.stringify(overflow));
     }
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.reload();
+    await page.locator("#knowledge-list details").first().waitFor({ state: "visible" });
+    const animation = await page.evaluate(() => window.__charts[0].options.animation);
+    assert.equal(animation.duration, 900);
+    assert.equal(animation.easing, "easeOutQuart");
+    await page.locator("#exploration-charts .exploration-chart").first().scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => window.__replays > 0);
     await context.close();
   } finally { await browser.close(); }
 });

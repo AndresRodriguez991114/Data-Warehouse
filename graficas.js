@@ -39,6 +39,8 @@
   const POLL_INTERVAL_MS = 300000;
   const number = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
   const whole = new Intl.NumberFormat("es-CO");
+  const palette = ["#176d52", "#ca6d39", "#5479b7", "#a45b93", "#b36d43", "#668f61"];
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const charts = new Map();
   let combinedChart = null;
   let currentData = null;
@@ -158,6 +160,7 @@
   function draw(container, title, description, rows, type, unit, color, id) {
     const figure = document.createElement("figure");
     figure.className = "exploration-chart";
+    figure.style.setProperty("--chart-accent", color);
     if (id) figure.id = id;
     const caption = document.createElement("figcaption");
     caption.append(text("h3", title), text("p", description));
@@ -190,13 +193,29 @@
     figure.append(caption, wrapper, details);
     container.append(figure);
 
-    return new ChartClass(canvas, {
+    const colorIndex = Math.max(0, palette.indexOf(color));
+    const colors = rows.map((row, index) => palette[(colorIndex + index) % palette.length]);
+
+    const chart = new ChartClass(canvas, {
       type,
-      data: { labels: rows.map(row => row.label), datasets: [{ label: unit, data: rows.map(row => row.value), backgroundColor: color, borderColor: color, borderWidth: 2, pointRadius: 3, tension: 0.1 }] },
+      data: {
+        labels: rows.map(row => row.label),
+        datasets: [{
+          label: unit,
+          data: rows.map(row => row.value),
+          backgroundColor: type === "bar" ? colors : color,
+          borderColor: type === "bar" ? colors : color,
+          borderWidth: 2,
+          borderRadius: type === "bar" ? 6 : 0,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          tension: 0.25
+        }]
+      },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false,
+        animation: reducedMotion.matches ? false : { duration: 900, easing: "easeOutQuart" },
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { afterLabel: context => {
@@ -210,6 +229,23 @@
         }
       }
     });
+    if (reducedMotion.matches || !("IntersectionObserver" in window)) return chart;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        observer.disconnect();
+        if (!reducedMotion.matches) {
+          chart.reset();
+          chart.update();
+        }
+      }
+    }, { threshold: 0.15 });
+    observer.observe(figure);
+    return {
+      destroy() {
+        observer.disconnect();
+        chart.destroy();
+      }
+    };
   }
 
   function renderCombined() {

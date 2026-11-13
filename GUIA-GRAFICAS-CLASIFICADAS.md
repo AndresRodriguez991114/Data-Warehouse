@@ -21,6 +21,8 @@ El análisis por hora usa la hora de `fecha_hora` y suma energía en todo el per
 
 Cada gráfica incluye una tabla expandible con los valores y el conteo del grupo. Las unidades y el período se indican junto al gráfico.
 
+Las barras usan colores variados para distinguir las categorías dentro de cada gráfica; los colores se reutilizan y no identifican una categoría de forma global. Las gráficas se animan al entrar en pantalla, salvo cuando el navegador solicita movimiento reducido.
+
 ## Hallazgos y decisiones
 
 Los hallazgos muestran el período, el balance total, los máximos observados por hora, la comparación de promedios por clima y los grupos con mayor consumo por franja o ubicación. Las sugerencias proponen líneas de investigación y seguimiento, no causalidad ni cambios automáticos del sistema.
