@@ -1,86 +1,89 @@
 window.PROJECT_DATA = {
   title: "Energía sostenible",
-  supabaseUrl: "https://zlvqxkezmlswzfozlhwy.supabase.co",
-  supabasePublishableKey: "sb_publishable_s5qcggTz4Fd0iaTXf8kUgA_zmAGWbCq",
   identification: [
     ["Institución", "Universidad de Cundinamarca"],
     ["Referencia académica", "Big Data"],
     ["Programa académico", "Ingeniería de Sistemas y Computación"],
     ["Sede o extensión", "Extensión Chía"],
-    ["Integrantes", "Cesar Eduardo Bolivar Gonzalez Andres Rodriguez"],
-    ["Docente", "Edison Gustavo Canon Varela"],
+    ["Integrantes", "César Eduardo Bolívar González · Andrés Yesid Rodríguez Bermúdez"],
+    ["Docente", "Edison Gustavo Cañón Varela"],
     ["Año de portada", "2026"]
   ],
   powerBiEmbedUrl: "",
   knowledge: [
     {
-      title: "Generación concentrada en valores bajos",
-      pregunta: "¿En qué intervalo se concentra la generación registrada?",
-      variables: "Energía generada en Wh y número de mediciones.",
-      procedimiento: "Agrupar los registros en intervalos de 10 Wh y dividir la frecuencia del intervalo entre 1.000.000 de mediciones.",
-      resultado: "514.909 mediciones, el 51,49 %, registraron entre 0 Wh inclusive y 10 Wh exclusivo.",
-      hallazgo: "Más de la mitad de las mediciones se concentra en el primer intervalo de generación.",
-      interpretacion: "Las lecturas bajas son frecuentes en este conjunto; no se puede atribuir esa concentración a una hora o causa concreta sin desglosarla.",
-      utilidad: "Orienta el análisis posterior de los momentos y condiciones con baja generación.",
-      limitacion: "Son mediciones, no viviendas ni energía total; no se ha verificado la duración de cada registro ni la correspondencia con la simulación del informe previo.",
-      evidencia: "Distribución de la generación; datos de la captura indicada arriba.",
-      evidenciaHref: "#grafica-distribucion-generacion"
+      title: "Conciliación de datos reales y simulados",
+      pregunta: "¿Cómo se compone la tabla Medición?",
+      variables: "Telemetría cruda, registros rechazados, mediciones reales limpias y registros simulados.",
+      procedimiento: "Conciliar los conteos de Telemetría_Real, la limpieza y la carga total de Medición.",
+      resultado: "2.417 registros crudos − 46 rechazados = 2.371 reales limpios; más 1.000.000 simulados = 1.002.371 filas en Medición.",
+      hallazgo: "La carga distingue las mediciones del único prototipo físico de los datos generados para 50 dispositivos simulados.",
+      interpretacion: "Los conteos reales y simulados se combinan en Medición, pero se identifican como orígenes distintos.",
+      utilidad: "Mantener separada la validación del ESP32 de la escala ampliada de la simulación.",
+      limitacion: "Los registros de la tabla agregada del Data Warehouse tienen otra granularidad.",
+      evidencia: "Video de verificación W1 en SSMS, 13 de noviembre de 2026."
     },
     {
-      title: "Distribución del nivel de batería",
-      pregunta: "¿En qué intervalo se concentra el nivel de batería registrado?",
-      variables: "Nivel de batería (%) y número de mediciones.",
-      procedimiento: "Agrupar niveles en intervalos de 20 puntos porcentuales y dividir la frecuencia entre 1.000.000 de mediciones.",
-      resultado: "431.037 mediciones, el 43,10 %, se ubican entre 20 % inclusive y 40 % exclusivo.",
-      hallazgo: "El intervalo de 20 % a menos de 40 % es el más frecuente.",
-      interpretacion: "Las lecturas de ese nivel aparecen con mayor frecuencia en el conjunto analizado.",
-      utilidad: "Permite orientar un seguimiento de los niveles bajos y revisar umbrales de alerta.",
-      limitacion: "El porcentaje corresponde a lecturas, no a baterías; no establece riesgo de descarga ni duración en ese nivel.",
-      evidencia: "Distribución del nivel de batería; datos de la captura indicada arriba.",
-      evidenciaHref: "#grafica-distribucion-bateria"
+      title: "Limpieza y reglas de calidad",
+      pregunta: "¿Qué registros crudos se descartaron y por qué?",
+      variables: "Voltajes, corriente, estado de carga y claves requeridas.",
+      procedimiento: "Rechazar voltaje de panel fuera de 0–6 V, batería fuera de 3,0–4,2 V, corriente negativa, carga apagada por tiempo prolongado o claves nulas.",
+      resultado: "Se eliminaron 46 de 2.417 registros crudos (1,9 %). Los rechazados se conservan en Rechazados_ETL con el motivo.",
+      hallazgo: "La lectura de batería de 1,12 V de la evidencia queda fuera del rango válido y se rechaza.",
+      interpretacion: "Las reglas evitan que mediciones fuera de los límites definidos ingresen al conjunto limpio.",
+      utilidad: "Consultar el motivo de rechazo para revisar y corregir la fuente de cada dato.",
+      limitacion: "El dato fuera de rango no debe presentarse como una lectura válida de batería."
     },
     {
-      title: "Generación según condición climática",
-      pregunta: "¿Cómo difiere la generación promedio entre condiciones climáticas?",
-      variables: "Condición climática y energía generada en Wh por medición.",
-      procedimiento: "Agrupar por condición y dividir la suma numérica de las lecturas entre el número de valores no nulos de cada grupo.",
-      resultado: "Despejado: 119,38 Wh por medición (261.450 registros); muy nublado / lluvia: 22,63 Wh (32.200 registros).",
-      hallazgo: "El promedio registrado bajo condición despejada es mayor que en el grupo muy nublado / lluvia.",
-      interpretacion: "Existe una asociación descriptiva entre condición climática y generación en el conjunto consultado.",
-      utilidad: "Ayuda a priorizar la revisión de la disponibilidad de generación en condiciones menos favorables.",
-      limitacion: "No demuestra que el clima cause la diferencia; podrían influir la hora, los dispositivos y la cobertura de cada grupo.",
-      evidencia: "Generación promedio por clima; datos de la captura indicada arriba.",
-      evidenciaHref: "#grafica-generacion-clima"
+      title: "ETL repetible sin duplicados",
+      pregunta: "¿Qué ocurrió al ejecutar dos veces el paquete SSIS?",
+      variables: "Conteos de Telemetría_Real, Medición, Fact_Mediciones y Alertas.",
+      procedimiento: "Comparar los conteos antes y después de la segunda ejecución y revisar duplicados por la llave compuesta del hecho.",
+      resultado: "Los conteos se mantuvieron: 2.417, 1.002.371, 249.956 y 13, respectivamente. La verificación de duplicados devolvió 0 filas.",
+      hallazgo: "La segunda ejecución no duplicó registros en las tablas verificadas.",
+      interpretacion: "La llave compuesta y la marca de agua forman parte del control de carga incremental.",
+      utilidad: "Repetir la carga sin alterar los conteos ya consolidados.",
+      limitacion: "La afirmación se limita a las tablas y ejecuciones incluidas en la verificación W1."
     },
     {
-      title: "Consumo según franja horaria",
-      pregunta: "¿En qué franja se observa mayor consumo promedio por medición?",
-      variables: "Franja del día y energía consumida total en Wh por medición.",
-      procedimiento: "Agrupar por franja y dividir la suma numérica de lecturas entre los registros no nulos de cada grupo.",
-      resultado: "Noche: 93,58 Wh por medición (249.600 registros); madrugada: 38,89 Wh (250.800 registros).",
-      hallazgo: "La noche presenta el promedio más alto y la madrugada el más bajo entre las franjas observadas.",
-      interpretacion: "El consumo registrado varía entre franjas del escenario analizado.",
-      utilidad: "Permite priorizar la revisión de la carga nocturna y del respaldo de batería.",
-      limitacion: "No representa energía total ni demuestra la causa de la diferencia; el resultado depende de la cobertura y definición de las franjas.",
-      evidencia: "Consumo promedio por franja; datos de la captura indicada arriba.",
-      evidenciaHref: "#grafica-consumo-franja"
+      title: "Energía generada por franja",
+      pregunta: "¿Cómo se distribuye la generación entre día y noche?",
+      variables: "Filas agregadas, generación en kWh y voltaje promedio del panel.",
+      procedimiento: "Comparar las franjas día (06:00–17:59) y noche (18:00–05:59) en Fact_Mediciones.",
+      resultado: "Día: 149.974 filas, 1.842,5 kWh (95,9 %) y 4,82 V promedio. Noche: 99.982 filas, 78,4 kWh (4,1 %) y 1,58 V promedio.",
+      hallazgo: "La generación registrada se concentra durante el día.",
+      interpretacion: "Las lecturas de baja irradiancia muestran voltaje residual con corriente y potencia nulas o casi nulas; la energía nocturna residual se atribuye a transiciones de amanecer y atardecer.",
+      utilidad: "Priorizar el monitoreo de generación diurna y revisar el comportamiento en los cambios de franja.",
+      limitacion: "Son resultados del conjunto agregado analizado; no representan una instalación residencial real."
     },
     {
-      title: "Análisis conjunto",
-      pregunta: "¿Cómo varía el consumo nocturno de julio al considerar también el clima?",
-      variables: "Mes, condición climática, franja del día y consumo en Wh por medición.",
-      procedimiento: "Agrupar directamente por mes, clima y franja; seleccionar julio de 2026 y noche; calcular promedio y cantidad de valores no nulos por condición.",
-      resultado: "Muy nublado / lluvia: 94,58 Wh por medición (2.050 registros); parcialmente nublado: 93,33 Wh (15.400 registros).",
-      hallazgo: "En julio y de noche, el promedio del primer grupo supera al segundo en 1,25 Wh por medición.",
-      interpretacion: "La diferencia describe una combinación concreta de período, clima y franja, no el comportamiento de todos los meses.",
-      utilidad: "Sirve para delimitar qué combinación conviene examinar antes de actuar.",
-      limitacion: "Los grupos tienen tamaños distintos, julio está incompleto y no se ha demostrado causalidad ni diferencia práctica relevante.",
-      evidencia: "Consumo por clima y franja; seleccionar 2026-07-01 en el filtro de mes.",
-      evidenciaHref: "#grafica-conjunto"
+      title: "Lecturas eléctricas y calibración",
+      pregunta: "¿Qué muestran las fotografías de la maqueta?",
+      variables: "Voltaje, corriente y potencia del panel; voltaje y corriente de batería.",
+      procedimiento: "Contrastar las lecturas del dashboard y de las pantallas LCD registradas en las fotografías.",
+      resultado: "Dashboard: panel 2,16 V, 0,00 A, 0,00 W y 0,00 Wh. LCD panel: 1,00 V y 0,01 A. LCD batería: 1,12 V y −0,0 A.",
+      hallazgo: "El voltaje de batería de 1,12 V queda por debajo del rango válido de 3,0–4,2 V; las lecturas de panel con corriente nula indican ausencia de generación en ese instante.",
+      interpretacion: "La diferencia de escala entre dashboard y LCD se atribuye al divisor resistivo y a la escala configurada en Node-RED.",
+      utilidad: "Considerar las escalas al comparar las lecturas de los instrumentos.",
+      limitacion: "La calibración entre el divisor resistivo, Node-RED y la visualización debe tratarse como una limitación del prototipo."
     }
   ],
   decisions: [
-    { title: "Revisar la carga nocturna", accion: "Evaluar en el escenario simulado la gestión de la carga y el respaldo de batería durante la noche.", respaldo: "Noche: 93,58 Wh por medición y 249.600 registros; madrugada: 38,89 Wh y 250.800 registros.", destino: "Proceso de consumo y almacenamiento en la franja nocturna.", seguimiento: "Buscar un consumo nocturno más controlado; comparar el promedio de Wh por medición y el número de lecturas en períodos equivalentes.", limitacion: "No se conoce aún la duración de las lecturas ni se demuestra que modificar la carga reduzca costos o mejore la autonomía real." },
-    { title: "Vigilar condiciones de baja generación", accion: "Priorizar el monitoreo de generación en condiciones muy nubladas o de lluvia dentro del escenario analizado.", respaldo: "Muy nublado / lluvia: 22,63 Wh por medición en 32.200 registros; despejado: 119,38 Wh en 261.450 registros.", destino: "Proceso de seguimiento de generación solar según condición climática.", seguimiento: "Revisar disponibilidad y posibles desviaciones mediante el promedio de generación por medición, con conteos y períodos comparables.", limitacion: "La diferencia es una asociación; hora, dispositivos y cobertura pueden influir. Debe validarse antes de aplicarla a una instalación real." }
+    {
+      title: "Revisar la calibración de lecturas",
+      accion: "Comparar el voltaje medido por el panel, el LCD y el dashboard con la escala del divisor resistivo y la configuración de Node-RED.",
+      respaldo: "Las fotografías muestran 2,16 V en el dashboard y 1,00 V en el LCD del panel; la batería registra 1,12 V, fuera del rango definido.",
+      destino: "Instrumentación, adquisición y visualización de voltaje.",
+      seguimiento: "Documentar la escala usada en cada punto de medición y confirmar que las lecturas se comparen con la misma referencia.",
+      limitacion: "Los valores de las fotografías corresponden a instantes concretos de la prueba."
+    },
+    {
+      title: "Controlar registros fuera de rango",
+      accion: "Mantener los límites de calidad y revisar los registros enviados a Rechazados_ETL antes de cargar las mediciones.",
+      respaldo: "Se rechazaron 46 registros crudos; la lectura de batería de 1,12 V está por debajo del intervalo válido de 3,0–4,2 V.",
+      destino: "Limpieza de telemetría y control de alertas.",
+      seguimiento: "Conservar el motivo de rechazo y verificar los conteos antes y después de cada ejecución.",
+      limitacion: "No volver a incorporar un registro rechazado sin corregir o validar su origen."
+    }
   ]
 };

@@ -41,7 +41,7 @@ El documento previo no permite reconstruir un cronograma con fechas y responsabl
 
 El informe previo describe un ESP32-S3, panel de 0 a 6 V, batería de litio de 3,7 V, dos sensores ACS712, divisores resistivos y dos pantallas LCD 16×2. El microcontrolador mide voltaje y corriente cada dos segundos; una tira de LED representa la carga. Los actores descritos son el habitante de la casa y el administrador o estudiante que monitorea y prepara la información.
 
-El flujo descrito es ESP32 → MQTT → Node-RED → SQL Server (`Telemetria_Real`) → limpieza → `Medicion` → SSIS → Data Warehouse → análisis. El informe anterior contiene fotografías, capturas del flujo y tableros, y describe una incidencia de permisos al enviar alertas por correo. [Incorporar las evidencias disponibles y comprobar el estado de la incidencia].
+El flujo implementado y verificado es ESP32 → MQTT → Node-RED → SQL Server (`Telemetria_Real`) → limpieza → `Medicion` → SSIS → Data Warehouse → análisis. La verificación del flujo fue confirmada por el equipo. El informe anterior contiene fotografías, capturas del flujo y tableros; la incidencia de permisos al enviar alertas por correo está resuelta, aunque el detalle técnico de la solución está pendiente de documentar.
 
 **Productos esperados:** modelo relacional, un millón de mediciones simuladas, esquema estrella, paquete ETL y análisis. **Evidencias disponibles en el informe previo:** fotografías de la maqueta, capturas de Node-RED y SQL Server, diagramas de modelos y scripts de preparación. Esas capturas no sustituyen los resultados de validación que todavía figuran como `[pegar]` en el documento.
 
