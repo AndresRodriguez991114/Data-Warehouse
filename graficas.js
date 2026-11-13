@@ -257,7 +257,7 @@
     displayMetric("metric-bateria", totals.bateria_promedio_pct, "%");
   }
 
-  function maxBy(rows, key) {
+  function maxBy(rows) {
     return rows.filter(row => Number.isFinite(row.value)).sort((left, right) => right.value - left.value)[0] || null;
   }
 
@@ -303,6 +303,7 @@
     const totals = data.totales;
     const generated = Number(totals.generacion_suma);
     const consumed = Number(totals.consumo_suma);
+    if (!Number.isFinite(generated) || !Number.isFinite(consumed)) throw new Error("Las sumas de generación y consumo no son válidas.");
     const coverage = Number.isFinite(generated) && Number.isFinite(consumed) && consumed > 0 ? generated / consumed * 100 : null;
     const byPeriod = api.groupAverage(data.grupos, "franja", "consumo").filter(item => item.count > 0);
     const byClimate = api.groupAverage(data.grupos, "condicion", "generacion").filter(item => item.count > 0);
@@ -468,9 +469,10 @@
       }
       render(data);
     } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
       status.textContent = currentData
-        ? "No se pudo actualizar; se conservan los últimos datos cargados."
-        : "No se pudieron cargar las gráficas. Verifica las funciones de Supabase, la caché y la clave publicable.";
+        ? `No se pudo actualizar; se conservan los últimos datos cargados. ${reason}`
+        : `No se pudieron cargar las gráficas. ${reason}`;
     } finally {
       loading = false;
     }
