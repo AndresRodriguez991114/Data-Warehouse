@@ -18,6 +18,14 @@ La actualización de la caché lee toda la tabla y puede causar carga o costos. 
 4. La clave publicable y la URL ya están configuradas en `data.js`. Es una clave pública: aparecerá en el navegador y en el repositorio. Nunca uses ni compartas `service_role`, `sb_secret_...`, contraseñas o cadenas de conexión.
 5. Para refrescar la caché automáticamente, primero verifica que el cálculo manual termine en menos de un minuto. Con `pg_cron` habilitado y acceso de administrador, programa `SELECT public.pgc_actualizar_cache_energia_2026();` cada minuto desde Supabase Cron. Vigila duración, errores y costos; si es demasiado pesado, usa un intervalo mayor. Sin tarea programada, vuelve a ejecutar el cálculo manualmente y los datos no serán actuales.
 
+## 2.1 Activar las gráficas adicionales
+
+1. Revisa y ejecuta una sola vez `SUPABASE-GRAFICAS.sql` en el SQL Editor del mismo proyecto. Crea una caché independiente y dos funciones; no cambia el resumen ya existente. Si aparecen errores, no repitas el script sin revisar la causa.
+2. En una consulta nueva, ejecuta `SELECT public.pgc_actualizar_graficas_energia_2026();`. Devuelve `NULL` al terminar porque actualiza la caché. Después, `SELECT public.pgc_graficas_publicas_2026();` debe devolver `estado: ok`. El cálculo puede tardar: recorre la tabla varias veces.
+3. Las gráficas publican histogramas globales y agregados combinados por mes, clima y franja horaria. No incluyen direcciones ni identificadores de dispositivos. Se omiten grupos y tramos con menos de 10 mediciones, pero esto no garantiza anonimato ni evita inferencias por diferencias entre actualizaciones. Confirma que está autorizado publicar estos agregados. La omisión puede cambiar los resultados; se informa en el sitio.
+4. La caché de gráficas **no se refresca con la tarea del resumen anterior**. Para mantenerla actualizada, crea una tarea separada en Supabase Cron con `SELECT public.pgc_actualizar_graficas_energia_2026();`, después de medir su duración y valorar la carga; empieza con un intervalo de varios minutos. Sin esa tarea, ejecutar el cálculo manualmente. El sitio consulta la caché como máximo cada minuto, pero no calcula los datos.
+5. Sube también `chart-aggregates.js` y `graficas.js` al repositorio para que Vercel despliegue la versión nueva. Comprueba en la URL publicada la fecha de cálculo, los gráficos, el selector de mes y las tablas de datos.
+
 ## 3. Activar avisos de cambio
 
 El sitio vuelve a leer la caché cada minuto mientras la pestaña esté visible. Los avisos son opcionales y **no actualizan la caché por sí mismos**: se necesita la tarea programada indicada antes.
@@ -28,7 +36,7 @@ El sitio vuelve a leer la caché cada minuto mientras la pestaña esté visible.
 
 ## 4. Publicar en Vercel
 
-1. Sube el sitio al repositorio de GitHub autorizado: `index.html`, `styles.css`, `data.js`, `app.js` y `live-dashboard.js`. No subas secretos ni datos individuales.
+1. Sube el sitio al repositorio de GitHub autorizado: `index.html`, `styles.css`, `data.js`, `app.js`, `live-dashboard.js`, `chart-aggregates.js` y `graficas.js`. No subas secretos ni datos individuales.
 2. En Vercel, selecciona **Add New > Project**, importa el repositorio y utiliza la carpeta raíz del sitio. Como es HTML estático, selecciona **Other** si solicita framework y deja vacíos los comandos de compilación y el directorio de salida si Vercel los solicita. Despliega el proyecto.
 3. Abre la URL que Vercel proporcione, revisa las secciones y confirma que el dashboard muestre una hora de consulta reciente y datos reales. Abre una ventana privada para comprobar el acceso público. Verifica los cambios con una actualización autorizada en la base de prueba y revisa la consola y los registros de Supabase si hay errores.
 

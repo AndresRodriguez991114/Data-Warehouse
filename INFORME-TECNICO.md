@@ -68,34 +68,78 @@ El equipo proporcionó el resultado de `DIAGNOSTICO-DATOS.sql` para toda la tabl
 
 Los promedios son por medición, no totales. No se debe concluir un balance energético ni sumar Wh hasta conocer si las lecturas son incrementales, no superpuestas y comparables. Los resultados fueron proporcionados por el equipo y deben acompañarse de la evidencia de ejecución y fecha de extracción.
 
-El sitio presenta dos gráficas preliminares con estos resultados: una compara los promedios de generación y consumo y otra muestra el nivel medio de batería. Ambas abarcan el período completo de Supabase sin filtros adicionales y usan un millón de valores no nulos por variable. No muestran distribuciones ni tendencias y no sustituyen los análisis y la integración interactiva exigidos. [Añadir capturas legibles y verificar los resultados en la fuente].
+El sitio preparado incorpora, además, gráficas de distribuciones, comparaciones y un análisis conjunto. Los resultados siguientes corresponden a la caché calculada el 13 de noviembre de 2026 a las 05:26:40 UTC, con datos del 1 de enero al 28 de julio de 2026 a las 07:45. La consulta pública reportó 1.000.000 de mediciones; las frecuencias de cada variable y los grupos conjuntos sumaron esa misma cantidad, con cero tramos y cero grupos omitidos. Las gráficas en línea pueden cambiar si se actualiza la caché. [Adjuntar capturas de este corte].
 
 | Visualización | Tipo | Pregunta y variables | Procedimiento y filtros | Resultado, unidad y número de registros |
 | --- | --- | --- | --- | --- |
-| [Nombre] | Univariado 1 | [Completar] | [Completar] | [Completar] |
-| [Nombre] | Univariado 2 | [Completar] | [Completar] | [Completar] |
-| [Nombre] | Univariado 3 | [Completar] | [Completar] | [Completar] |
-| [Nombre] | Bivariado 1 | [Completar] | [Completar] | [Completar] |
-| [Nombre] | Bivariado 2 | [Completar] | [Completar] | [Completar] |
-| [Nombre] | Bivariado 3 | [Completar] | [Completar] | [Completar] |
-| [Nombre] | Multivariado | [Tres o más variables] | [Agrupación conjunta directa y filtros] | [Valores y tamaño de cada grupo] |
+| Distribución del consumo | Univariado 1 | ¿En qué intervalos aparecen las lecturas de consumo? | Frecuencia por intervalos de 10 Wh; límite superior excluido. | Intervalo de 30 a menos de 40 Wh: 132.199 lecturas, 13,22 % del millón. |
+| Distribución de generación | Univariado 2 | ¿En qué intervalo se concentran las lecturas de generación? | Frecuencia por intervalos de 10 Wh; límite superior excluido. | De 0 a menos de 10 Wh: 514.909 lecturas, 51,49 % del millón. |
+| Distribución de batería | Univariado 3 | ¿Qué niveles de batería se registran con mayor frecuencia? | Frecuencia por intervalos de 20 puntos porcentuales. | De 20 % a menos de 40 %: 431.037 lecturas, 43,10 % del millón. |
+| Generación por clima | Bivariado 1 | ¿Cómo cambia la generación promedio por condición climática? | Promedio por condición, ponderado por lecturas no nulas. | Despejado: 119,38 Wh, n=261.450; muy nublado / lluvia: 22,63 Wh, n=32.200. |
+| Consumo por franja | Bivariado 2 | ¿Cómo varía el consumo por franja horaria? | Promedio por franja, ponderado por lecturas no nulas. | Noche: 93,58 Wh, n=249.600; madrugada: 38,89 Wh, n=250.800. |
+| Consumo por mes | Bivariado 3 | ¿Cómo cambia el consumo promedio por mes? | Promedio mensual ponderado por lecturas no nulas. | Enero: 72,73 Wh, n=148.800; febrero: 73,04 Wh, n=134.400; julio parcial: 72,61 Wh, n=131.200. |
+| Consumo por mes, clima y franja | Multivariado | ¿Cómo varía el consumo nocturno de julio al considerar el clima? | Agrupar conjuntamente mes, condición y franja; filtrar julio de 2026 y noche. | Muy nublado / lluvia: 94,58 Wh, n=2.050; parcialmente nublado: 93,33 Wh, n=15.400. |
 
-Documentar las cinco medidas concretas y sus fórmulas o definiciones: [completar]. Para tasas, indicar denominador; para promedio y mediana, interpretar la distribución. Incluir capturas legibles de los gráficos con títulos, unidades y filtros.
+Los porcentajes de las distribuciones usan como denominador el millón de registros. Los promedios se expresan en Wh por medición y se ponderan por la cantidad de valores no nulos, no por el número de grupos. Los resultados no constituyen totales de energía. [Incluir capturas legibles con títulos, unidades y filtros].
 
 ## 7. Cinco conocimientos evidentes
 
-Repetir la siguiente ficha cinco veces, con una visualización correspondiente a cada una. Identificar también sus filtros, período y cantidad de registros.
+Los cinco conocimientos siguientes usan el corte y período indicados en la sección 6. Cada evidencia gráfica corresponde a la visualización del mismo nombre en el sitio; [insertar capturas del corte].
 
-### Conocimiento [1 a 5]: [título]
+### 1. Generación concentrada en valores bajos
 
-1. Pregunta y relación con el problema: [completar].
-2. Variables y unidades: [completar].
-3. Procedimiento reproducible, agrupación y filtros: [completar].
-4. Resultado numérico y evidencia gráfica: [completar e insertar captura].
-5. Hallazgo: [completar].
-6. Interpretación contextual: [completar].
-7. Utilidad: [completar].
-8. Limitación: [completar].
+- **Pregunta:** ¿En qué intervalo se concentra la generación registrada?
+- **Variables:** energía generada en Wh y número de mediciones.
+- **Procedimiento:** agrupar en intervalos de 10 Wh y dividir la frecuencia entre 1.000.000.
+- **Resultado y evidencia:** de 0 a menos de 10 Wh hay 514.909 lecturas (51,49 %). Gráfica: distribución de generación.
+- **Hallazgo:** más de la mitad se concentra en el primer intervalo.
+- **Interpretación:** las lecturas bajas son frecuentes en el conjunto.
+- **Utilidad:** orientar una revisión por momento y condiciones.
+- **Limitación:** no identifica una causa ni representa viviendas o energía total; la duración de cada registro sigue sin confirmarse para Supabase.
+
+### 2. Distribución del nivel de batería
+
+- **Pregunta:** ¿En qué intervalo se concentra el nivel de batería?
+- **Variables:** nivel de batería (%) y número de mediciones.
+- **Procedimiento:** agrupar en intervalos de 20 puntos porcentuales y dividir por 1.000.000.
+- **Resultado y evidencia:** de 20 % a menos de 40 % hay 431.037 lecturas (43,10 %). Gráfica: distribución de batería.
+- **Hallazgo:** es el intervalo más frecuente.
+- **Interpretación:** ese nivel aparece con frecuencia en las lecturas registradas.
+- **Utilidad:** orientar el seguimiento de umbrales de alerta.
+- **Limitación:** son lecturas, no baterías ni tiempo acumulado; no prueba un riesgo de descarga.
+
+### 3. Generación por condición climática
+
+- **Pregunta:** ¿Cómo difiere la generación promedio entre condiciones climáticas?
+- **Variables:** condición climática y energía generada por medición.
+- **Procedimiento:** sumar las lecturas de cada condición y dividir entre el número de valores no nulos.
+- **Resultado y evidencia:** despejado, 119,38 Wh (n=261.450); muy nublado / lluvia, 22,63 Wh (n=32.200). Gráfica: generación por clima.
+- **Hallazgo:** el promedio de la categoría despejada es mayor.
+- **Interpretación:** existe una asociación descriptiva en el conjunto consultado.
+- **Utilidad:** priorizar la revisión de disponibilidad de generación en condiciones menos favorables.
+- **Limitación:** no demuestra causalidad; hora, dispositivos y cobertura pueden influir.
+
+### 4. Consumo por franja horaria
+
+- **Pregunta:** ¿En qué franja se observa mayor consumo promedio por medición?
+- **Variables:** franja del día y consumo en Wh por medición.
+- **Procedimiento:** agrupar por franja y dividir la suma numérica por el número de lecturas no nulas.
+- **Resultado y evidencia:** noche, 93,58 Wh (n=249.600); madrugada, 38,89 Wh (n=250.800). Gráfica: consumo por franja.
+- **Hallazgo:** noche es el promedio más alto y madrugada el más bajo entre las franjas.
+- **Interpretación:** el consumo registrado difiere según la franja.
+- **Utilidad:** priorizar la revisión de la carga nocturna y del respaldo de batería.
+- **Limitación:** no es energía total ni demuestra la causa de la diferencia; depende de la definición y cobertura de las franjas.
+
+### 5. Consumo por mes, clima y franja
+
+- **Pregunta:** ¿Cómo varía el consumo nocturno de julio al considerar el clima?
+- **Variables:** mes, condición climática, franja y consumo en Wh por medición.
+- **Procedimiento:** agrupar conjuntamente las tres dimensiones y filtrar julio de 2026 y noche; calcular promedio y cantidad de valores no nulos por condición.
+- **Resultado y evidencia:** muy nublado / lluvia, 94,58 Wh (n=2.050); parcialmente nublado, 93,33 Wh (n=15.400). Gráfica: consumo por clima y franja, seleccionar julio.
+- **Hallazgo:** el primer promedio supera al segundo en 1,25 Wh por medición.
+- **Interpretación:** describe una combinación concreta, no todos los meses.
+- **Utilidad:** delimitar qué combinación examinar antes de actuar.
+- **Limitación:** los grupos tienen tamaños distintos, julio está incompleto y no se ha demostrado causalidad ni relevancia práctica de la diferencia.
 
 ## 8. Validación
 
@@ -105,11 +149,11 @@ La consulta de diagnóstico de Supabase fue facilitada por el equipo; queda pend
 
 | Elemento | Decisión 1 | Decisión 2 |
 | --- | --- | --- |
-| Acción propuesta | [Completar] | [Completar] |
-| Hallazgo, valores y evidencia | [Completar] | [Completar] |
-| Proceso, dispositivo, ubicación o grupo | [Completar] | [Completar] |
-| Mejora esperada e indicador de seguimiento | [Completar] | [Completar] |
-| Limitaciones | [Completar] | [Completar] |
+| Acción propuesta | Evaluar la gestión de la carga y el respaldo de batería durante la noche. | Priorizar el monitoreo de generación en condiciones muy nubladas o de lluvia. |
+| Hallazgo, valores y evidencia | Consumo promedio nocturno 93,58 Wh (n=249.600), frente a 38,89 Wh en madrugada (n=250.800); gráfica de consumo por franja. | Generación promedio 22,63 Wh (n=32.200), frente a 119,38 Wh en despejado (n=261.450); gráfica de generación por clima. |
+| Proceso, dispositivo, ubicación o grupo | Consumo y almacenamiento en la franja nocturna del escenario simulado. | Seguimiento de generación solar por condición climática en el escenario analizado. |
+| Mejora esperada e indicador de seguimiento | Buscar un consumo nocturno más controlado; comparar promedio de Wh por medición y conteos en períodos equivalentes. | Detectar desviaciones de disponibilidad; seguir el promedio de generación por medición y los conteos de cada condición. |
+| Limitaciones | Duración de las lecturas no confirmada; no demuestra ahorro o autonomía real. | Asociación, no causalidad; validar con horas, dispositivos y cobertura comparables antes de aplicar a una instalación real. |
 
 ## 10. Publicación e integración
 

@@ -12,6 +12,8 @@
   <script src="data.js" defer></script>
   <script src="app.js" defer></script>
   <script src="live-dashboard.js" defer></script>
+  <script src="chart-aggregates.js" defer></script>
+  <script src="graficas.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -92,13 +94,21 @@
             <p class="chart-note">Es el promedio de los niveles registrados, no una medición actual ni la proporción de baterías cargadas.</p>
           </figure>
         </div>
+        <div class="exploration-heading"><div><span class="section-number">ANÁLISIS EXPLORATORIO</span><h3>Distribuciones y comparaciones</h3></div><p id="exploration-status" role="status">Esperando datos agregados para las gráficas.</p></div>
+        <div id="exploration-content" hidden>
+          <p id="exploration-period"></p>
+          <div id="exploration-charts" class="exploration-charts"></div>
+          <div class="exploration-filter"><label for="grafico-mes">Mes para el análisis conjunto</label><select id="grafico-mes"></select></div>
+          <div id="combined-chart" class="exploration-charts"></div>
+          <p id="exploration-limitations" class="chart-note"></p>
+        </div>
         <div id="dashboard-container" class="dashboard-container" hidden></div>
         <p id="dashboard-status" hidden></p>
-        <p class="pending">Pendiente: distribuciones, comparaciones por grupos y análisis multivariado con datos del mismo período.</p>
       </section>
 
       <section class="section" id="hallazgos">
         <div class="section-heading"><div><span class="section-number">05 / CONOCIMIENTO</span><h2>Lo que nos dicen los datos</h2></div><p>Cinco conocimientos, cada uno vinculado a su evidencia y sus límites.</p></div>
+        <p>Resultados de la caché de Supabase calculada el 13 de noviembre de 2026 a las 05:26 UTC, para el período del 1 de enero al 28 de julio de 2026 a las 07:45. Las gráficas pueden cambiar si la caché se actualiza; conservar una captura para reproducir estas cifras.</p>
         <div id="knowledge-list" class="knowledge-list"></div>
       </section>
 

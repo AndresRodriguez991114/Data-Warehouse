@@ -37,7 +37,7 @@
   const dateText = value => value ? String(value).replace("T", " ").slice(0, 19) : "Sin fecha";
   const queryTime = value => {
     const date = new Date(value);
-    return value && Number.isFinite(date.getTime()) ? `${date.toLocaleString("es-CO", { timeZone: "America/Bogota" })} (hora de Colombia)` : "hora no disponible";
+    return value && Number.isFinite(date.getTime()) ? `${date.toLocaleString("es-CO", { timeZone: "America/Bogota" })}` : "hora no disponible";
   };
 
   function render(summary) {
@@ -67,7 +67,7 @@
     document.getElementById("bar-consumo").style.width = `${Number.isFinite(consumption) && consumption >= 0 ? consumption / maximum * 100 : 0}%`;
     document.getElementById("bar-bateria").style.width = `${Number.isFinite(battery) && battery >= 0 && battery <= 100 ? battery : 0}%`;
     const invalid = [generation, consumption].some(value => Number.isFinite(value) && value < 0) || (Number.isFinite(battery) && (battery < 0 || battery > 100));
-    status.textContent = `Resumen calculado: ${queryTime(summary.consultado_en)}. El sitio consulta la caché como máximo una vez por minuto.${invalid ? " Hay promedios fuera de rango; revisa los datos." : ""}`;
+    status.textContent = `Resumen calculado: ${queryTime(summary.consultado_en)}${invalid ? " Hay promedios fuera de rango; revisa los datos." : ""}`;
   }
 
   let client;
