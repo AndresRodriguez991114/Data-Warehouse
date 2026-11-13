@@ -2,6 +2,8 @@
 
 Este material es una base, no una entrega terminada. Los textos marcados como pendientes, los datos, el informe interactivo, la publicación y las evidencias deben completarse con el proyecto real. No publicar contraseñas, cadenas de conexión ni claves privadas.
 
+Para conectar el resumen público con Supabase y desplegar en Vercel, seguir `CONECTAR-SUPABASE-VERCEL.md` y revisar primero sus advertencias de privacidad y costos.
+
 Para la versión sin Power BI, ejecutar `DIAGNOSTICO-DATOS.sql` y `ANALISIS-AGRUPADO.sql` en Supabase, por separado, y compartir los resultados agregados para completar el análisis. Exportar todas las filas de la segunda consulta y comprobar que la suma de `mediciones` coincida con el diagnóstico; una vista o exportación limitada no representa todos los datos. El análisis directo y sus gráficos no sustituyen el requisito del dashboard interactivo.
 
 Para las distribuciones, ejecutar también `ANALISIS-UNIVARIADO.sql` y exportar el resultado completo. Los valores de consumo y generación se agrupan en tramos de 10 Wh: cada inicio representa el intervalo desde ese valor inclusive hasta 10 Wh más, sin incluir el límite superior; un inicio vacío indica dato faltante. En cada una de las tres variables la suma de `mediciones` debe coincidir con el diagnóstico. Los casos con claves sin correspondencia o duplicadas se conservan para investigarlos.

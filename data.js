@@ -1,5 +1,7 @@
 window.PROJECT_DATA = {
   title: "Energía sostenible",
+  supabaseUrl: "https://zlvqxkezmlswzfozlhwy.supabase.co",
+  supabasePublishableKey: "sb_publishable_s5qcggTz4Fd0iaTXf8kUgA_zmAGWbCq",
   identification: [
     ["Institución", "Universidad de Cundinamarca"],
     ["Referencia académica", "Big Data"],
@@ -21,8 +23,7 @@ window.PROJECT_DATA = {
       interpretacion: "Resume las lecturas del período, pero no representa el consumo total de una vivienda ni el consumo actual.",
       utilidad: "Sirve como referencia inicial para comparaciones posteriores con períodos y grupos equivalentes.",
       limitacion: "El promedio no muestra distribución ni tendencias; falta confirmar la duración y significado de cada lectura y su relación con la maqueta.",
-      evidencia: "Gráfica 01: energía promedio por medición, período completo y sin filtros adicionales.",
-      evidenciaHref: "#grafica-energia"
+      evidencia: "Resultado histórico de la consulta de diagnóstico facilitado por el equipo; la gráfica puede actualizarse con datos posteriores."
     },
     {
       title: "Generación solar",
@@ -34,8 +35,7 @@ window.PROJECT_DATA = {
       interpretacion: "Resume las lecturas del período, pero no representa la generación total ni la producción actual.",
       utilidad: "Sirve como referencia inicial para estudiar diferencias entre períodos y dispositivos.",
       limitacion: "El promedio no muestra distribución ni tendencias; falta confirmar la duración y significado de cada lectura y su relación con la maqueta.",
-      evidencia: "Gráfica 01: energía promedio por medición, período completo y sin filtros adicionales.",
-      evidenciaHref: "#grafica-energia"
+      evidencia: "Resultado histórico de la consulta de diagnóstico facilitado por el equipo; la gráfica puede actualizarse con datos posteriores."
     },
     {
       title: "Consumo por ubicación",

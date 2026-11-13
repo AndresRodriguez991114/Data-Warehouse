@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles.css">
   <script src="data.js" defer></script>
   <script src="app.js" defer></script>
+  <script src="live-dashboard.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -65,35 +66,35 @@
       <section class="section dashboard-section" id="dashboard">
         <div class="section-heading"><div><span class="section-number">04 / EXPLORACIÓN</span><h2>Dashboard de energía</h2></div><p>Generación, consumo y comportamiento de las mediciones.</p></div>
         <h3>Diagnóstico general</h3>
-        <p>Resultados de la <a href="DIAGNOSTICO-DATOS.sql">consulta SQL</a> ejecutada por el equipo, sin filtros adicionales. Período: 1 de enero de 2026, 00:00 a 28 de julio de 2026, 07:45.</p>
+        <p id="live-status" role="status">Consulta histórica facilitada por el equipo; conexión automática aún no configurada.</p>
+        <p id="live-period">Sin filtros adicionales. Período: 1 de enero de 2026, 00:00 a 28 de julio de 2026, 07:45.</p>
         <div class="metrics" aria-label="Indicadores del diagnóstico">
-          <div><strong>1.000.000</strong><span>mediciones</span></div>
-          <div><strong>50</strong><span>dispositivos con mediciones</span></div>
-          <div><strong>50</strong><span>ubicaciones con mediciones</span></div>
-          <div><strong>80,54 Wh</strong><span>generación promedio por medición</span></div>
-          <div><strong>72,75 Wh</strong><span>consumo promedio por medición</span></div>
-          <div><strong>53,43 %</strong><span>nivel promedio de batería</span></div>
+          <div><strong id="metric-mediciones">1.000.000</strong><span>mediciones</span></div>
+          <div><strong id="metric-dispositivos">50</strong><span>dispositivos con mediciones</span></div>
+          <div><strong id="metric-ubicaciones">50</strong><span>ubicaciones con mediciones</span></div>
+          <div><strong id="metric-generacion">80,54 Wh</strong><span>generación promedio por medición</span></div>
+          <div><strong id="metric-consumo">72,75 Wh</strong><span>consumo promedio por medición</span></div>
+          <div><strong id="metric-bateria">53,43 %</strong><span>nivel promedio de batería</span></div>
         </div>
-        <p>Los promedios se calculan sobre registros no nulos: en estos tres campos se reportaron 1.000.000 de valores no nulos. No equivalen a totales ni confirman que los dispositivos estén activos actualmente. Debe verificarse la duración y el significado de cada lectura antes de sumar energía.</p>
+        <p>Los promedios se calculan sobre registros no nulos. No equivalen a totales ni confirman que los dispositivos estén activos actualmente. Debe verificarse la duración y el significado de cada lectura antes de sumar energía.</p>
         <div class="charts">
           <figure class="chart" id="grafica-energia">
-            <figcaption><span class="section-number">GRÁFICA 01 / SUPABASE</span><h3>Energía promedio por medición</h3><p>Wh por medición · 1.000.000 de registros no nulos por variable</p></figcaption>
-            <div class="bar-row"><span>Generación</span><div class="bar-track"><div class="bar-fill generation" style="width:80.54%"></div></div><strong>80,54 Wh</strong></div>
-            <div class="bar-row"><span>Consumo</span><div class="bar-track"><div class="bar-fill consumption" style="width:72.75%"></div></div><strong>72,75 Wh</strong></div>
-            <div class="chart-axis"><span>0 Wh</span><span>100 Wh</span></div>
+            <figcaption><span class="section-number">GRÁFICA 01 / SUPABASE</span><h3>Energía promedio por medición</h3><p id="energy-denominators">Wh por medición · 1.000.000 de registros no nulos por variable</p></figcaption>
+            <div class="bar-row"><span>Generación</span><div class="bar-track"><div id="bar-generacion" class="bar-fill generation" style="width:80.54%"></div></div><strong id="chart-generacion">80,54 Wh</strong></div>
+            <div class="bar-row"><span>Consumo</span><div class="bar-track"><div id="bar-consumo" class="bar-fill consumption" style="width:72.75%"></div></div><strong id="chart-consumo">72,75 Wh</strong></div>
+            <div class="chart-axis"><span>0 Wh</span><span id="energy-axis-max">100 Wh</span></div>
             <p class="chart-note">Promedios generales, no totales ni balance energético. No describen por sí solos la distribución o variación temporal.</p>
           </figure>
           <figure class="chart" id="grafica-bateria">
-            <figcaption><span class="section-number">GRÁFICA 02 / SUPABASE</span><h3>Nivel promedio de batería</h3><p>Porcentaje · 1.000.000 de registros no nulos</p></figcaption>
-            <div class="bar-row battery-row"><span>Nivel promedio</span><div class="bar-track"><div class="bar-fill battery" style="width:53.43%"></div></div><strong>53,43 %</strong></div>
+            <figcaption><span class="section-number">GRÁFICA 02 / SUPABASE</span><h3>Nivel promedio de batería</h3><p id="battery-denominator">Porcentaje · 1.000.000 de registros no nulos</p></figcaption>
+            <div class="bar-row battery-row"><span>Nivel promedio</span><div class="bar-track"><div id="bar-bateria" class="bar-fill battery" style="width:53.43%"></div></div><strong id="chart-bateria">53,43 %</strong></div>
             <div class="chart-axis"><span>0 %</span><span>100 %</span></div>
             <p class="chart-note">Es el promedio de los niveles registrados, no una medición actual ni la proporción de baterías cargadas.</p>
           </figure>
         </div>
-        <p>Ambas gráficas usan el período completo del diagnóstico de Supabase: 1 de enero de 2026, 00:00 a 28 de julio de 2026, 07:45, sin filtros adicionales. No describen el escenario de octubre del informe previo.</p>
-        <div id="dashboard-container" class="dashboard-container"><div class="dashboard-placeholder"><div class="placeholder-icon" aria-hidden="true">↗</div><h3>Dashboard interactivo no incluido</h3><p>Esta versión no contiene un informe de Power BI. Los resultados del análisis se documentarán a partir de consultas verificables a la base de datos.</p><span>El requisito de integración interactiva permanece sin cumplir.</span></div></div>
-        <div class="dashboard-foot"><span>ANÁLISIS DE DATOS</span><span id="dashboard-status">Informe interactivo no disponible</span></div>
-        <p class="pending">Faltan las distribuciones, comparaciones por grupos y el análisis multivariado conjunto. Las gráficas anteriores no sustituyen el informe interactivo solicitado.</p>
+        <div id="dashboard-container" class="dashboard-container" hidden></div>
+        <p id="dashboard-status" hidden></p>
+        <p class="pending">Pendiente: distribuciones, comparaciones por grupos y análisis multivariado con datos del mismo período.</p>
       </section>
 
       <section class="section" id="hallazgos">
