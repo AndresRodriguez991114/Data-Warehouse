@@ -2,22 +2,22 @@
 
 Este material es una base, no una entrega terminada. Los textos marcados como pendientes, los datos, el informe interactivo, la publicación y las evidencias deben completarse con el proyecto real. No publicar contraseñas, cadenas de conexión ni claves privadas.
 
-Para conectar el resumen público con Supabase y desplegar en Vercel, seguir `CONECTAR-SUPABASE-VERCEL.md` y revisar primero sus advertencias de privacidad y costos.
+Para conectar el resumen público con Supabase y desplegar en Vercel, seguir `../despliegue/CONECTAR-SUPABASE-VERCEL.md` y revisar primero sus advertencias de privacidad y costos.
 
-Para la versión sin Power BI, ejecutar `DIAGNOSTICO-DATOS.sql` y `ANALISIS-AGRUPADO.sql` en Supabase, por separado, y compartir los resultados agregados para completar el análisis. Exportar todas las filas de la segunda consulta y comprobar que la suma de `mediciones` coincida con el diagnóstico; una vista o exportación limitada no representa todos los datos. El análisis directo y sus gráficos no sustituyen el requisito del dashboard interactivo.
+Para la versión sin Power BI, ejecutar `../../sql/analisis/DIAGNOSTICO-DATOS.sql` y `../../sql/analisis/ANALISIS-AGRUPADO.sql` en Supabase, por separado, y compartir los resultados agregados para completar el análisis. Exportar todas las filas de la segunda consulta y comprobar que la suma de `mediciones` coincida con el diagnóstico; una vista o exportación limitada no representa todos los datos. El análisis directo y sus gráficos no sustituyen el requisito del dashboard interactivo.
 
-Para las distribuciones, ejecutar también `ANALISIS-UNIVARIADO.sql` y exportar el resultado completo. Los valores de consumo y generación se agrupan en tramos de 10 Wh: cada inicio representa el intervalo desde ese valor inclusive hasta 10 Wh más, sin incluir el límite superior; un inicio vacío indica dato faltante. En cada una de las tres variables la suma de `mediciones` debe coincidir con el diagnóstico. Los casos con claves sin correspondencia o duplicadas se conservan para investigarlos.
+Para las distribuciones, ejecutar también `../../sql/analisis/ANALISIS-UNIVARIADO.sql` y exportar el resultado completo. Los valores de consumo y generación se agrupan en tramos de 10 Wh: cada inicio representa el intervalo desde ese valor inclusive hasta 10 Wh más, sin incluir el límite superior; un inicio vacío indica dato faltante. En cada una de las tres variables la suma de `mediciones` debe coincidir con el diagnóstico. Los casos con claves sin correspondencia o duplicadas se conservan para investigarlos.
 
 ## 1. Completar el sitio
 
-1. Abrir `index.html` en el navegador para revisar el sitio.
-2. En `data.js`, completar el título, programa, sede, ciclo, integrantes, tipo de proyecto, cinco conocimientos y dos decisiones. Mantener las comillas y las comas de JavaScript. Cada conocimiento debe referirse a un gráfico existente del informe y especificar los filtros.
-3. En `index.html`, reemplazar los textos pendientes sobre problema, beneficiarios, objetivos, arquitectura, cronograma, simulación, ETL, modelos, resultados, conclusiones y referencias. Confirmar que las descripciones actuales reflejen el proyecto real.
+1. Abrir `../../index.html` en el navegador para revisar el sitio.
+2. En `../../data.js`, completar el título, programa, sede, ciclo, integrantes, tipo de proyecto, cinco conocimientos y dos decisiones. Mantener las comillas y las comas de JavaScript. Cada conocimiento debe referirse a un gráfico existente del informe y especificar los filtros.
+3. En `../../index.html`, reemplazar los textos pendientes sobre problema, beneficiarios, objetivos, arquitectura, cronograma, simulación, ETL, modelos, resultados, conclusiones y referencias. Confirmar que las descripciones actuales reflejen el proyecto real.
 4. Añadir enlaces o capturas de las evidencias reales y las fuentes consultadas. No presentar la foto ilustrativa como evidencia del proyecto.
 
 ## 2. Construir el informe en Power BI Desktop
 
-Para las tablas reales del proyecto, seguir también `POWER-BI-PASO-A-PASO.md` y ejecutar `DIAGNOSTICO-DATOS.sql` en Supabase.
+Para las tablas reales del proyecto, seguir también `POWER-BI-PASO-A-PASO.md` y ejecutar `../../sql/analisis/DIAGNOSTICO-DATOS.sql` en Supabase.
 
 1. Obtener la tabla de hechos y las dimensiones **ya cargadas en el Data Warehouse**, o una exportación autorizada que conserve los datos y relaciones. La URL de Supabase por sí sola no identifica las tablas ni proporciona acceso. Registrar fuente, fecha de extracción, período, conteo de filas y unidades.
 2. Revisar el modelo y las relaciones. En Power Query, documentar tipos, duplicados, fechas inválidas, faltantes y valores atípicos; investigar estos últimos antes de decidir si corresponde excluirlos. No afirmar que existen un millón de mediciones sin comprobar el conteo.
@@ -44,13 +44,13 @@ Si una variable no existe, sustituirla por otra real y ajustar las preguntas. Si
 Power BI Desktop no genera por sí solo un informe interactivo insertable en el sitio. Hay que iniciar sesión y publicar el PBIX en Power BI Service, con permisos y licencias según el entorno de la organización.
 
 1. En Desktop, guardar y publicar el informe en un espacio de trabajo al que tengas acceso.
-2. En Power BI Service, abrir el informe y buscar **Archivo > Insertar informe > Sitio web o portal**. Copiar la URL de inserción generada (no el HTML completo) en `powerBiEmbedUrl` de `data.js`. Esta modalidad requiere que el docente inicie sesión y tenga acceso al informe y los permisos/licencias necesarios. Una página pública no concede acceso automáticamente.
+2. En Power BI Service, abrir el informe y buscar **Archivo > Insertar informe > Sitio web o portal**. Copiar la URL de inserción generada (no el HTML completo) en `powerBiEmbedUrl` de `../../data.js`. Esta modalidad requiere que el docente inicie sesión y tenga acceso al informe y los permisos/licencias necesarios. Una página pública no concede acceso automáticamente.
 3. Como alternativa, **Publicar en la web (público)** puede estar habilitado por el administrador, pero expone el informe y sus datos a cualquiera en Internet. Usarlo solo con autorización expresa y datos apropiados para publicación pública; no usarlo con información sensible. Copiar la URL de inserción generada por el servicio.
 4. Abrir el sitio publicado como docente o con una cuenta equivalente y comprobar que el iframe carga y que los filtros funcionan. Una captura no sustituye el informe interactivo. Si el docente no puede acceder, resolver permisos o consultar con él una alternativa; no declarar completado este requisito.
 
 ## 4. Publicar con GitHub Pages
 
-1. Subir los archivos del sitio (`index.html`, `styles.css`, `data.js`, `app.js` y `DIAGNOSTICO-DATOS.sql`) a un repositorio de GitHub autorizado. Revisar que no contengan secretos ni datos sensibles.
+1. Subir los archivos del sitio (`index.html`, `styles.css`, `data.js` y `app.js`) y la consulta `sql/analisis/DIAGNOSTICO-DATOS.sql` a un repositorio de GitHub autorizado. Revisar que no contengan secretos ni datos sensibles.
 2. En GitHub, abrir **Settings > Pages**, seleccionar **Deploy from a branch**, la rama correspondiente y la carpeta `/ (root)`, y guardar.
 3. Abrir la URL que aparece en Pages cuando el despliegue termine. Revisar todas las secciones, el diseño móvil y el informe integrado con los permisos del docente. Tomar capturas de la publicación y del informe funcionando.
 

@@ -4,7 +4,7 @@ Esta guía utiliza los nombres de tablas y columnas proporcionados. Los resultad
 
 ## 1. Diagnóstico inicial
 
-En Supabase, abrir **SQL Editor**, pegar el contenido de `DIAGNOSTICO-DATOS.sql` y ejecutarlo. La consulta solo lee datos y devuelve una fila con cantidad, período, promedios, faltantes y valores que requieren revisión. Compartir los resultados agregados, sin contraseñas ni datos personales.
+En Supabase, abrir **SQL Editor**, pegar el contenido de `../../sql/analisis/DIAGNOSTICO-DATOS.sql` y ejecutarlo. La consulta solo lee datos y devuelve una fila con cantidad, período, promedios, faltantes y valores que requieren revisión. Compartir los resultados agregados, sin contraseñas ni datos personales.
 
 Los promedios son por registro no nulo, no por vivienda ni necesariamente por hora. La columna de dispositivos cuenta identificadores distintos con mediciones, no confirma que estén activos actualmente. Los valores negativos o fuera de rango son señales para investigar, no razones automáticas para eliminarlos.
 

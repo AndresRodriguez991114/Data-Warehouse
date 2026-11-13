@@ -28,7 +28,7 @@ test("consulta SQL conserva grupos, histogramas y permisos", { skip: !PGlite }, 
       FROM generate_series(1, 50) AS value;
       INSERT INTO public.fact_medicion_solar VALUES ('2026-01-02', 2, 1, 15, 25, 50);
     `);
-    await db.exec(fs.readFileSync("SUPABASE-GRAFICAS.sql", "utf8"));
+    await db.exec(fs.readFileSync(path.join(__dirname, "../sql/supabase/SUPABASE-GRAFICAS.sql"), "utf8"));
     await db.exec("SELECT public.pgc_actualizar_graficas_energia_2026();");
     await db.exec("SET ROLE anon;");
     const response = await db.query("SELECT public.pgc_graficas_publicas_2026() AS data;");

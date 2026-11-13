@@ -59,7 +59,7 @@ El flujo descrito es ESP32 → MQTT → Node-RED → SQL Server (`Telemetria_Rea
 
 ## 6. Indicadores y análisis
 
-El equipo proporcionó el resultado de `DIAGNOSTICO-DATOS.sql` para toda la tabla, sin filtros adicionales:
+El equipo proporcionó el resultado de `../../sql/analisis/DIAGNOSTICO-DATOS.sql` para toda la tabla, sin filtros adicionales:
 
 | Indicador | Definición y resultado |
 | --- | --- |
@@ -174,5 +174,5 @@ Estos resultados describen los registros consultados y no demuestran causalidad,
 ### Fuentes
 
 - Equipo del proyecto. Conjunto de mediciones de `public.fact_medicion_solar` y dimensiones asociadas, consultado en Supabase. Corte de la caché: 13 de noviembre de 2026, 05:26:40 UTC; período de datos: 1 de enero al 28 de julio de 2026.
-- Equipo del proyecto. Consultas SQL de diagnóstico y análisis incluidas en `DIAGNOSTICO-DATOS.sql`, `ANALISIS-AGRUPADO.sql` y `ANALISIS-UNIVARIADO.sql`.
+- Equipo del proyecto. Consultas SQL de diagnóstico y análisis incluidas en `../../sql/analisis/DIAGNOSTICO-DATOS.sql`, `../../sql/analisis/ANALISIS-AGRUPADO.sql` y `../../sql/analisis/ANALISIS-UNIVARIADO.sql`.
 - Equipo del proyecto. *Energía sostenible*, sitio web publicado. https://energia-sostenible-datawarehouse.vercel.app/ (consulta: 13 de noviembre de 2026).
