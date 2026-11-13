@@ -55,22 +55,4 @@
     decisionList.append(article);
   });
 
-  if (data.powerBiEmbedUrl) {
-    try {
-      const url = new URL(data.powerBiEmbedUrl);
-      if (url.protocol !== "https:" || url.hostname !== "app.powerbi.com" || !["/view", "/reportEmbed"].includes(url.pathname)) throw new Error("Enlace no admitido");
-      const frame = document.createElement("iframe");
-      frame.src = url.href;
-      frame.title = "Dashboard interactivo de energía en Power BI";
-      frame.allowFullscreen = true;
-      frame.referrerPolicy = "strict-origin-when-cross-origin";
-      document.getElementById("dashboard-container").replaceChildren(frame);
-      document.getElementById("dashboard-container").hidden = false;
-      document.getElementById("dashboard-status").hidden = false;
-      document.getElementById("dashboard-status").textContent = "Consulta el informe y sus filtros";
-    } catch (error) {
-      document.getElementById("dashboard-status").hidden = false;
-      document.getElementById("dashboard-status").textContent = "El enlace de inserción no es válido";
-    }
-  }
 })();

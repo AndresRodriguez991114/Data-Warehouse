@@ -19,6 +19,24 @@ Sitio estático del proyecto de Data Warehouse, con un dashboard público, consu
 - [Guion del video](docs/entrega/GUION-VIDEO.md)
 - [Conectar Supabase y Vercel](docs/despliegue/CONECTAR-SUPABASE-VERCEL.md)
 
+## Documentación de gráficas
+
+- [Clasificación de gráficas](docs/CLASIFICACION-GRAFICAS.md) - Tipos y organización de gráficas
+- [Guía de gráficas clasificadas](GUIA-GRAFICAS-CLASIFICADAS.md) - Cómo usar e interpretar las gráficas
+- [Resumen visual](RESUMEN-GRAFICAS.md) - Estructura y matriz de gráficas
+
+## Acceso a gráficas
+
+- **Página principal:** [index.html](index.html)
+- **Gráficas clasificadas:** [graficas-clasificadas.html](graficas-clasificadas.html)
+
+### Categorías de gráficas disponibles
+
+1. **Gráficas básicas y de comparación** - Comparan valores entre categorías
+2. **Gráficas de distribución y frecuencia** - Muestran cómo se distribuyen los datos
+3. **Gráficas de relación y composición** - Muestran tendencias y evolución temporal
+4. **Gráficas especializadas** - Análisis técnicos y combinaciones complejas
+
 ## Pruebas
 
 Ejecutar desde la raíz del repositorio:

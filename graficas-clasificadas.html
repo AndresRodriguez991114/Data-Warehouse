@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Análisis de gráficas del proyecto de energía solar comunitaria clasificadas por tipo.">
+  <title>Gráficas Clasificadas | Energía sostenible</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="data.js" defer></script>
+  <script src="chart-aggregates.js" defer></script>
+  <script src="graficas.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Energía para el pueblo, inicio"><img class="brand-mark" src="Logo.png" alt=""><span>ENERGÍA <span class="brand-light">/</span> COMUNIDAD</span></a>
+    <span class="topbar-tag">ANÁLISIS DE GRÁFICAS CLASIFICADAS</span>
+  </header>
+  <div class="layout" id="inicio">
+    <aside class="sidebar" aria-label="Navegación del proyecto">
+      <p class="sidebar-label">GRÁFICAS</p>
+      <nav>
+        <a href="index.html"><span>←</span> Volver a inicio</a>
+        <a href="#comparacion"><span>01</span> Comparación</a>
+        <a href="#distribucion"><span>02</span> Distribución</a>
+        <a href="#relacion"><span>03</span> Relación</a>
+      </nav>
+      <div class="sidebar-note"><span class="status-dot"></span> VISUALIZACIÓN INTERACTIVA<br><strong>Energía solar comunitaria</strong></div>
+    </aside>
+    <main id="contenido">
+      <section class="section" id="graficas-principales">
+        <div class="section-heading">
+          <div>
+            <span class="section-number">04 / ANÁLISIS</span>
+            <h2>Gráficas clasificadas por tipo</h2>
+          </div>
+          <p>Las gráficas se organizan según la forma en que presentan y organizan los datos para facilitar el análisis.</p>
+        </div>
+        
+        <div id="exploration-status" role="status" style="padding: 12px; background: #e6f0dc; border-radius: 4px; border-left: 3px solid #176d52; margin-bottom: 24px; display: none;">
+          Cargando gráficas...
+        </div>
+
+        <p id="exploration-period" style="color: #6b7479; font-size: 13px; margin-bottom: 24px;">
+          Período: sin datos · sin filtros generales
+        </p>
+
+        <div id="exploration-content" hidden>
+          <div class="exploration-filter">
+            <label for="grafico-mes">Filtrar por mes (gráfica combinada):</label>
+            <select id="grafico-mes" aria-label="Seleccione el mes para la gráfica combinada"></select>
+          </div>
+
+          <!-- Sección de gráficas clasificadas -->
+          <div id="exploration-charts" aria-label="Gráficas clasificadas por tipo"></div>
+
+          <!-- Gráfica combinada interactiva -->
+          <div class="chart-category" id="combined-section" style="margin-top: 48px; padding-top: 32px; border-top: 2px solid var(--ink);">
+            <div class="category-header">
+              <h3>Gráficas especializadas</h3>
+              <p>Gráficas especializadas para análisis técnicos específicos del sistema energético</p>
+            </div>
+            <div id="combined-chart" class="exploration-charts"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="informacion-tipos">
+        <div class="section-heading">
+          <div>
+            <span class="section-number">INFORMACIÓN</span>
+            <h2>Tipos de gráficas</h2>
+          </div>
+        </div>
+        
+        <div class="content-grid">
+          <article>
+            <h3>Gráficas básicas y de comparación</h3>
+            <p>Comparan valores entre diferentes categorías o grupos para identificar diferencias y tendencias. Son útiles para determinar cuáles son las características más frecuentes o cómo varían los promedios según diferentes factores.</p>
+          </article>
+          <article>
+            <h3>Gráficas de distribución y frecuencia</h3>
+            <p>Muestran la distribución de datos en intervalos o rangos para identificar patrones de frecuencia. Permiten ver cómo se concentran las mediciones en diferentes rangos de valores.</p>
+          </article>
+          <article>
+            <h3>Gráficas de relación y composición</h3>
+            <p>Muestran tendencias, evolución temporal y combinaciones de variables para identificar relaciones. Son especialmente útiles para análisis de series temporales y comportamientos complejos.</p>
+          </article>
+          <article>
+            <h3>Gráficas especializadas</h3>
+            <p>Gráficas especializadas para análisis técnicos específicos del sistema energético. Estas gráficas permiten hacer análisis multidimensionales y combinaciones de variables particulares.</p>
+          </article>
+        </div>
+      </section>
+
+      <footer>
+        <span>ENERGÍA / COMUNIDAD</span>
+        <span>Proyecto de gestión del conocimiento · Ciudad inteligente</span>
+        <a href="#inicio">Volver arriba ↑</a>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

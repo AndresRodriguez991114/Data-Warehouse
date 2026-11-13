@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="styles.css">
   <script src="data.js" defer></script>
   <script src="app.js" defer></script>
+  <script src="chart-aggregates.js" defer></script>
+  <script src="graficas.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -49,52 +51,48 @@
 
       <section class="section" id="metodologia">
         <div class="section-heading"><div><span class="section-number">02 / PROCESO</span><h2>De la pregunta a la decisión</h2></div></div>
-        <div class="steps"><div><span>01</span><strong>Comprensión del negocio</strong><p>Monitorear generación y consumo en la maqueta física Casa 1.</p></div><div><span>02</span><strong>Comprensión de los datos</strong><p>Capturar telemetría real del ESP32-S3 y distinguirla de los registros simulados.</p></div><div><span>03</span><strong>Preparación</strong><p>Aplicar reglas de calidad y registrar rechazos con su motivo.</p></div><div><span>04</span><strong>Modelado</strong><p>Preparar modelos relacional y multidimensional para el análisis.</p></div><div><span>05</span><strong>Evaluación</strong><p>Conciliar conteos y verificar que una segunda carga no genere duplicados.</p></div><div><span>06</span><strong>Despliegue</strong><p>Comunicar resultados mediante el sitio web; todavía no hay un dashboard de Power BI.</p></div></div>
-        <p>La captura de telemetría real se realizó el 11 de noviembre de 2026, entre las 14:32:11 y las 17:59:59, con un prototipo físico. La tabla Medición combina esa captura limpia con un millón de registros simulados para 50 dispositivos; por ello, el volumen simulado no representa 50 equipos físicos.</p>
-        <h3>Desarrollo de la solución</h3><p>La maqueta física utiliza un ESP32-S3 para medir voltaje y corriente del panel solar y de la batería cada dos segundos. El panel tiene un rango de 0 a 6 V, la batería de litio un rango válido de 3,0 a 4,2 V y una tira LED representa la carga. La simulación de datos agrega registros para 50 dispositivos; la evidencia física corresponde a un solo prototipo.</p><p>El flujo implementado y verificado es ESP32 → MQTT → Node-RED → SQL Server (<code>Telemetria_Real</code>) → limpieza → <code>Medicion</code> → SSIS → Data Warehouse → análisis. El análisis se documenta en este sitio; actualmente no hay dashboard de Power BI. El servicio de alertas por correo fue reactivado y la incidencia de permisos está resuelta.</p>
+        <div class="steps"><div><span>01</span><strong>Comprensión del negocio</strong><p>Monitorear generación y consumo en la maqueta física Casa 1.</p></div><div><span>02</span><strong>Comprensión de los datos</strong><p>Combinar telemetría del ESP32-S3 con mediciones simuladas.</p></div><div><span>03</span><strong>Preparación</strong><p>Transformar los registros y controlar su calidad.</p></div><div><span>04</span><strong>Modelado</strong><p>Organizar las mediciones en un modelo dimensional.</p></div><div><span>05</span><strong>Evaluación</strong><p>Conciliar los conteos y comprobar la repetición de la carga.</p></div><div><span>06</span><strong>Despliegue</strong><p>Consultar agregados de Supabase y apoyar decisiones con gráficas actualizadas.</p></div></div>
+        <p>El alcance temporal y los conteos mostrados en el dashboard se leen de la base de Supabase al cargar la página. La maqueta física corresponde a un único ESP32-S3; el número de dispositivos y ubicaciones de la base describe los registros disponibles, no la cantidad de prototipos físicos.</p>
+        <h3>Desarrollo de la solución</h3><p>La maqueta utiliza un ESP32-S3 para medir voltaje y corriente del panel solar y de la batería cada dos segundos. En las pruebas se observaron voltajes de panel entre 1,68 y 2,26 V, y de batería entre 3,72 y 3,85 V. La batería es de litio; una tira LED representa la carga.</p><p>El flujo del proyecto es ESP32 → MQTT → Node-RED → SQL Server → limpieza → SSIS → Data Warehouse. Esta página consulta únicamente los agregados publicados por Supabase; no conecta el navegador a SQL Server ni expone registros individuales. El servicio de alertas por correo fue reactivado y la incidencia de permisos está resuelta.</p>
       </section>
 
       <section class="section" id="datos">
         <div class="section-heading"><div><span class="section-number">03 / INFORMACIÓN</span><h2>Gestión de los datos</h2></div><p></p></div>
-        <div class="data-grid"><article><span>01</span><h3>Telemetría y limpieza</h3><p><code>Telemetria_Real</code> contiene 2.417 registros crudos del 11 de noviembre de 2026, de 14:32:11 a 17:59:59. Se rechazaron 46 (1,9 %) y quedaron 2.371 mediciones reales limpias.</p></article><article><span>02</span><h3>Medición y simulación</h3><p><code>Medicion</code> contiene 1.002.371 filas: 1.000.000 simuladas más 2.371 reales limpias. El prototipo físico es un dispositivo; la simulación de datos utiliza 50.</p></article><article><span>03</span><h3>Data Warehouse</h3><p><code>Fact_Mediciones</code>: 249.956 filas. Dimensiones: 720 registros de tiempo, 354 de dispositivo y 354 de ubicación. La tabla <code>Alerta</code> contiene 13 alertas.</p></article><article><span>04</span><h3>Reglas ETL</h3><p>Se rechazan voltajes de panel fuera de 0–6 V, batería fuera de 3,0–4,2 V, corriente negativa, carga apagada por tiempo prolongado y claves nulas. Los rechazos se guardan en <code>Rechazados_ETL</code> con su motivo.</p></article></div>
-        <p>La ejecución del paquete se repitió dos veces sin borrar el Data Warehouse: los conteos permanecieron iguales y la consulta de duplicados devolvió cero filas. La marca de agua usa registros posteriores a la última fecha y hora cargada; las dimensiones se cargan antes de los hechos.</p>
+        <div class="data-grid"><article><span>01</span><h3>Fuente consultada</h3><p>La página obtiene métricas y visualizaciones desde funciones de lectura de Supabase que devuelven únicamente datos agregados.</p></article><article><span>02</span><h3>Período y volumen</h3><p>El intervalo y el total de mediciones se muestran a partir de la caché calculada en la base, no de cifras fijas en el sitio.</p></article><article><span>03</span><h3>Comparativos</h3><p>Las gráficas agrupan por mes, clima, franja, hora y categoría de ubicación; los grupos menores de 10 mediciones se omiten.</p></article><article><span>04</span><h3>Actualización</h3><p>Supabase Cron actualiza la caché cada 5 minutos y el navegador vuelve a consultarla con la misma frecuencia mientras la página está abierta.</p></article></div>
       </section>
 
       <section class="section dashboard-section" id="dashboard">
         <div class="section-heading"><div><span class="section-number">04 / EXPLORACIÓN</span><h2>Dashboard de energía</h2></div><p></p></div>
-        <h3>Verificación W1 · conteos de SSMS</h3>
-        <p id="dashboard-status" role="status">Todavía no hay un dashboard de Power BI. Los siguientes conteos corresponden a la verificación W1 de SQL Server del 13 de noviembre de 2026.</p>
-        <div class="metrics" aria-label="Conteos verificados de SQL Server">
-          <div><strong>2.417</strong><span>Telemetría_Real cruda</span></div>
-          <div><strong>1.002.371</strong><span>filas en Medición</span></div>
-          <div><strong>249.956</strong><span>filas en Fact_Mediciones</span></div>
-          <div><strong>46</strong><span>registros rechazados (1,9 %)</span></div>
-          <div><strong>13</strong><span>alertas</span></div>
-          <div><strong>0</strong><span>duplicados en la verificación</span></div>
+        <h3>Comparativos y retroalimentación desde Supabase</h3>
+        <p id="exploration-status" role="status">Conectando con Supabase…</p>
+        <div class="metrics" aria-label="Indicadores agregados de Supabase">
+          <div><strong id="metric-mediciones">Cargando…</strong><span>mediciones</span></div>
+          <div><strong id="metric-dispositivos">Cargando…</strong><span>dispositivos</span></div>
+          <div><strong id="metric-ubicaciones">Cargando…</strong><span>ubicaciones</span></div>
+          <div><strong id="metric-generacion">Cargando…</strong><span>generación promedio</span></div>
+          <div><strong id="metric-consumo">Cargando…</strong><span>consumo promedio</span></div>
+          <div><strong id="metric-bateria">Cargando…</strong><span>batería promedio</span></div>
         </div>
-        <div class="content-grid">
-          <article><h3>Dimensiones del Data Warehouse</h3><p>Dim_Tiempo: 720 filas (30 días × 24 horas). Dim_Dispositivo: 354 filas. Dim_Ubicación: 354 filas.</p></article>
-          <article><h3>Conciliación de la carga</h3><p>2.417 crudos − 46 rechazados = 2.371 reales limpios. Al sumar 1.000.000 simulados se obtienen 1.002.371 filas en Medición. El hecho agrega las mediciones a otra granularidad.</p></article>
-        </div>
-        <div class="charts">
-          <figure class="chart" id="grafica-dia-noche">
-            <figcaption><span class="section-number">ANÁLISIS A1 / FACT_MEDICIONES</span><h3>Generación por franja</h3><p>Día: 06:00–17:59 · Noche: 18:00–05:59</p></figcaption>
-            <div class="bar-row"><span>Día</span><div class="bar-track"><div class="bar-fill generation" style="width:95.9%"></div></div><strong>95,9 %</strong></div>
-            <p class="chart-note">149.974 filas · 1.842,5 kWh · voltaje promedio del panel: 4,82 V</p>
-            <div class="bar-row"><span>Noche</span><div class="bar-track"><div class="bar-fill consumption" style="width:4.1%"></div></div><strong>4,1 %</strong></div>
-            <p class="chart-note">99.982 filas · 78,4 kWh · voltaje promedio del panel: 1,58 V</p>
-            <p class="chart-note">Total: 249.956 filas y 1.920,9 kWh. La energía nocturna residual se atribuye a transiciones de amanecer y atardecer.</p>
-          </figure>
-          <figure class="chart" id="evidencia-maqueta">
-            <figcaption><span class="section-number">EVIDENCIA FOTOGRÁFICA / 11 NOV 2026</span><h3>Lecturas del prototipo</h3><p>Panel dashboard: 2,16 V · 0,00 A · 0,00 W · 0,00 Wh. LCD panel: 1,00 V · 0,01 A. LCD batería: 1,12 V · −0,0 A.</p></figcaption>
-            <p class="chart-note">La batería de 1,12 V está fuera del rango válido de 3,0–4,2 V y se rechaza. La diferencia de escala entre dashboard y LCD se atribuye al divisor resistivo y a la configuración de Node-RED; se reporta como limitación de calibración.</p>
-          </figure>
+        <p id="exploration-period">Período: pendiente de consulta.</p>
+        <div id="exploration-content" hidden>
+          <div class="exploration-filter">
+            <label for="grafico-mes">Filtrar la comparación por clima y franja:</label>
+            <select id="grafico-mes" aria-label="Seleccione el mes para la gráfica combinada"></select>
+          </div>
+          <div id="exploration-charts" aria-label="Gráficas comparativas de Supabase"></div>
+          <div class="chart-category" id="combined-section">
+            <div class="category-header">
+              <h3>Consumo por clima y franja</h3>
+              <p>Promedio de consumo calculado conjuntamente para el mes seleccionado.</p>
+            </div>
+            <div id="combined-chart" class="exploration-charts"></div>
+          </div>
         </div>
       </section>
 
       <section class="section" id="hallazgos">
         <div class="section-heading"><div><span class="section-number">05 / CONOCIMIENTO</span><h2>Lo que nos dicen los datos</h2></div><p></p></div>
-        <p>Hallazgos del conjunto validado en SSMS y de la evidencia de la maqueta. El análisis compara mediciones agregadas y separa los resultados del único prototipo físico de los registros simulados para 50 dispositivos.</p>
+        <p>Los hallazgos y las recomendaciones se calculan con los agregados devueltos por Supabase; se actualizan junto con las gráficas y describen únicamente el período disponible en la base.</p>
         <div id="knowledge-list" class="knowledge-list"></div>
       </section>
 
@@ -105,7 +103,7 @@
 
       <section class="section" id="cierre">
         <div class="section-heading"><div><span class="section-number">07 / CIERRE</span><h2>Conclusiones y fuentes</h2></div><p></p></div>
-        <div class="content-grid"><article><h3>Conclusiones técnicas</h3><p>El prototipo físico de un ESP32-S3 registró telemetría el 11 de noviembre de 2026. De 2.417 registros crudos, 46 fueron rechazados y 2.371 quedaron limpios; junto con 1.000.000 de registros simulados para 50 dispositivos, la tabla Medición contiene 1.002.371 filas. El Data Warehouse cargó 249.956 filas agregadas y la segunda ejecución mantuvo los conteos sin duplicados en la verificación.</p><p>El análisis A1 reporta 95,9 % de la energía durante el día y 4,1 % durante la noche. Las fotografías registran voltaje residual sin corriente de panel en el instante observado, y una lectura de batería de 1,12 V que queda fuera del rango definido. Las conclusiones describen el conjunto y la maqueta; no demuestran causalidad ni el rendimiento de una vivienda real.</p></article><article><h3>Fuentes</h3><p>Equipo del proyecto. Video de verificación W1 en SSMS, 13 de noviembre de 2026: conteos de Telemetría_Real, Medición, Fact_Mediciones, dimensiones y alertas.</p><p>Equipo del proyecto. Evidencia fotográfica del dashboard y de las pantallas LCD, 13 de noviembre de 2026.</p><p>Equipo del proyecto. Scripts SQL y análisis A1. Sitio: <a href="https://energia-sostenible-datawarehouse.vercel.app/">Energía sostenible</a>.</p></article></div>
+        <div class="content-grid"><article><h3>Conclusiones técnicas</h3><p>El sitio consulta una función de Supabase que entrega una caché de estadísticas y agregados; no consulta SQL Server ni descarga filas individuales al navegador. El refresco automático requiere que se ejecute el script de Cron de Supabase indicado en la guía de despliegue.</p><p>Las comparaciones y sugerencias se recalculan a partir de los datos agregados actuales. Son descriptivas y deben revisarse junto con la cobertura, el período y el número de mediciones de cada grupo; no demuestran causalidad ni representan por sí solas el desempeño de una vivienda real.</p></article><article><h3>Fuente de datos</h3><p>Base de Supabase del proyecto, mediante las funciones públicas de solo lectura y sus cachés agregadas. No se publican credenciales secretas, direcciones ni registros individuales.</p><p>La página del proyecto está disponible en <a href="https://energia-sostenible-datawarehouse.vercel.app/">Energía sostenible</a>.</p></article></div>
       </section>
       <footer><span>ENERGÍA / COMUNIDAD</span><span>Proyecto de gestión del conocimiento · Ciudad inteligente</span><a href="#inicio">Volver arriba ↑</a></footer>
     </main>

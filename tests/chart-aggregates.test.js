@@ -26,6 +26,15 @@ test("cuenta mediciones en lugar de grupos", () => {
   assert.equal(groupCounts(groups, "condicion")[0].value, 160);
 });
 
+test("mantiene la hora cero y ordena las horas numéricamente", () => {
+  const result = groupAverage([
+    { hora: 10, generacion_no_nula: 1, generacion_suma: 100 },
+    { hora: 0, generacion_no_nula: 1, generacion_suma: 5 },
+    { hora: 2, generacion_no_nula: 1, generacion_suma: 20 }
+  ], "hora", "generacion");
+  assert.deepEqual(result.map(item => item.label), [0, 2, 10]);
+});
+
 test("rechaza conteos inválidos", () => {
   assert.throws(() => groupAverage([{ mes: "2026-01-01", consumo_no_nulo: -1, consumo_suma: 1 }], "mes", "consumo"));
 });
