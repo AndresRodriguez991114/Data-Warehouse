@@ -50,6 +50,13 @@
     element.textContent = value === null || value === undefined ? "" : String(value);
     return element;
   };
+  const cacheSchemaError = "Supabase está devolviendo una caché con el formato anterior. En SQL Editor ejecuta sql/supabase/SUPABASE-GRAFICAS.sql y luego SELECT public.pgc_actualizar_graficas_energia_2026();";
+
+  function validateCache(data) {
+    if (!data || data.estado !== "ok" || !Array.isArray(data.grupos) || !Array.isArray(data.histogramas) || !Array.isArray(data.horas) || !Array.isArray(data.ubicaciones) || !data.totales) {
+      throw new Error(cacheSchemaError);
+    }
+  }
 
   const chartClassification = {
     comparacion: {
@@ -412,9 +419,6 @@
   }
 
   function render(data) {
-    if (!data || data.estado !== "ok" || !Array.isArray(data.grupos) || !Array.isArray(data.histogramas) || !Array.isArray(data.horas) || !Array.isArray(data.ubicaciones) || !data.totales) {
-      throw new Error("La caché de análisis no contiene los agregados requeridos.");
-    }
     currentData = data;
     renderMetrics(data.totales);
     content.hidden = false;
@@ -463,6 +467,7 @@
       if (!response.ok) throw new Error(`Supabase respondió ${response.status}.`);
       const data = await response.json();
       if (data.estado !== "ok") throw new Error("La caché aún no ha sido calculada.");
+      validateCache(data);
       if (!ChartClass) {
         const chartModule = await import("https://cdn.jsdelivr.net/npm/chart.js@4.4.8/auto/+esm");
         ChartClass = chartModule.default;
@@ -470,6 +475,13 @@
       render(data);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
+      ["metric-mediciones", "metric-dispositivos", "metric-ubicaciones", "metric-generacion", "metric-consumo", "metric-bateria"].forEach(id => {
+        const element = document.getElementById(id);
+        if (element && !currentData) element.textContent = "No disponible";
+      });
+      if (!currentData) {
+        document.getElementById("exploration-period").textContent = "Período no disponible hasta actualizar la caché de Supabase.";
+      }
       status.textContent = currentData
         ? `No se pudo actualizar; se conservan los últimos datos cargados. ${reason}`
         : `No se pudieron cargar las gráficas. ${reason}`;

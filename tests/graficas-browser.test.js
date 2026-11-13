@@ -99,3 +99,28 @@ test("la página presenta gráficas y decisiones desde Supabase y sondea cada ci
     await context.close();
   } finally { await browser.close(); }
 });
+
+test("explica cómo actualizar Supabase cuando la caché devuelve el formato anterior", { skip: !chromium || !fs.existsSync(browserPath) }, async () => {
+  const browser = await chromium.launch({ executablePath: browserPath, headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.route("https://zlvqxkezmlswzfozlhwy.supabase.co/rest/v1/rpc/pgc_graficas_publicas_2026", route => route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        estado: "ok",
+        calculado_en: "2026-07-28T12:00:00Z",
+        grupos: [],
+        histogramas: [],
+        mediciones_total: 0
+      })
+    }));
+    await page.goto(pathToFileURL(path.resolve("index.html")).href);
+    await page.getByText(/formato anterior/).waitFor({ state: "visible" });
+    assert.match(await page.locator("#exploration-status").innerText(), /SUPABASE-GRAFICAS\.sql/);
+    assert.match(await page.locator("#exploration-status").innerText(), /pgc_actualizar_graficas_energia_2026/);
+    assert.equal(await page.locator("#metric-mediciones").innerText(), "No disponible");
+    assert.match(await page.locator("#exploration-period").innerText(), /actualizar la caché/);
+    assert.equal(await page.locator("#exploration-charts .exploration-chart").count(), 0);
+  } finally { await browser.close(); }
+});
