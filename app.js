@@ -23,7 +23,13 @@
   function addFields(container, item, fields) {
     fields.forEach(([label, key]) => {
       const row = document.createElement("div");
-      row.append(textElement("dt", label), textElement("dd", item[key] || "Pendiente"));
+      const description = textElement("dd", item[key] || "Pendiente");
+      if (key === "evidencia" && item.evidenciaHref && /^#[\w-]+$/.test(item.evidenciaHref)) {
+        const link = textElement("a", item[key] || "Ver gráfica");
+        link.href = item.evidenciaHref;
+        description.replaceChildren(link);
+      }
+      row.append(textElement("dt", label), description);
       container.append(row);
     });
   }

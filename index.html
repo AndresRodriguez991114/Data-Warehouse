@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Documentación del proyecto de gestión del conocimiento sobre energía solar y consumo comunitario.">
-  <title>Energía para el pueblo | Proyecto de gestión del conocimiento</title>
+  <title>Energía sostenible | Proyecto de gestión del conocimiento</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -35,38 +35,65 @@
     <main id="contenido">
       <section class="intro section" id="proyecto">
         <div class="eyebrow"><span class="eyebrow-line"></span> CIUDAD INTELIGENTE / ENERGÍA</div>
-        <h1 id="project-title">Energía solar para la comunidad</h1>
-        <p class="intro-copy">Un proyecto para comprender la generación de energía solar y el consumo de la comunidad, con datos que apoyen decisiones mejor informadas.</p>
+        <h1 id="project-title">Energía sostenible</h1>
+        <p class="intro-copy">Una maqueta de vivienda inteligente en Cajicá para monitorear la generación solar y el consumo, y analizar datos que apoyen la gestión energética.</p>
         <figure class="intro-image"><img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Paneles solares al aire libre"><figcaption>Imagen ilustrativa · Unsplash</figcaption></figure>
-        <div class="intro-meta"><div><span>ENFOQUE</span><strong>Generación + consumo</strong></div><div><span>CONTEXTO</span><strong>Comunidad / pueblo</strong></div><div><span>ESTADO</span><strong>Por completar con evidencias</strong></div></div>
+        <div class="intro-meta"><div><span>ENFOQUE</span><strong>Generación + consumo</strong></div><div><span>CONTEXTO</span><strong>Maqueta de vivienda / Cajicá</strong></div><div><span>ESTADO</span><strong>En análisis y documentación</strong></div></div>
       </section>
 
       <section class="section" aria-labelledby="context-title">
         <div class="section-heading"><div><span class="section-number">01 / CONTEXTO</span><h2 id="context-title">El proyecto</h2></div><p>El problema, el propósito y las personas detrás de la propuesta.</p></div>
-        <div class="content-grid"><article><h3>Planteamiento del problema</h3><p>La comunidad necesita información confiable para entender cómo se genera y se consume la energía suministrada mediante paneles solares. Sin un seguimiento de las mediciones, es difícil identificar diferencias de consumo y orientar la gestión del recurso.</p><p class="pending">Completar con el contexto real del pueblo, la necesidad específica y su alcance.</p></article><article><h3>Justificación</h3><p>La solución busca beneficiar a la comunidad y a quienes gestionan el suministro, facilitando la consulta de mediciones y la identificación de patrones que puedan apoyar decisiones sobre el uso de la energía.</p><p class="pending">Precisar la población beneficiaria y la pertinencia con evidencia del proyecto.</p></article></div>
+        <div class="content-grid"><article><h3>Planteamiento del problema</h3><p>Para gestionar el uso de energía solar se necesita observar cuándo se genera y consume energía. El proyecto aborda esta necesidad mediante la Casa 1, una maqueta de vivienda inteligente ubicada en Cajicá, que permite medir el comportamiento de un panel, una batería y una carga representativa.</p></article><article><h3>Justificación</h3><p>El prototipo ofrece al equipo una forma de estudiar la relación entre generación y consumo y explorar decisiones de gestión energética. Sus resultados son experimentales: no demuestran por sí solos el abastecimiento de viviendas reales ni de todo el municipio.</p></article></div>
         <div class="fact-strip" id="identificacion"></div>
-        <div class="objective"><span class="section-number">OBJETIVO GENERAL</span><p>Analizar la información disponible sobre generación solar y consumo comunitario para producir conocimiento verificable que apoye la gestión del módulo de energía.</p></div>
-        <h3>Objetivos específicos</h3><ol class="objectives"><li>Documentar el desarrollo y la arquitectura del módulo.</li><li>Preparar y analizar los datos disponibles en el almacén de datos.</li><li>Comunicar hallazgos y decisiones sustentadas mediante un dashboard interactivo.</li></ol>
-        <p class="pending">Confirmar que el problema y los objetivos coincidan con los documentos aprobados del equipo.</p>
+        <div class="objective"><span class="section-number">OBJETIVO GENERAL</span><p>Implementar una solución de almacenamiento y preparación de datos para el módulo de ciudad inteligente mediante un modelo relacional, la simulación de mediciones, un modelo multidimensional y un proceso ETL en SSIS.</p></div>
+        <h3>Objetivos específicos</h3><ol class="objectives"><li>Diseñar un modelo relacional para dispositivos, ubicaciones, mediciones y eventos.</li><li>Simular mediciones con un comportamiento coherente con la maqueta.</li><li>Diseñar un esquema multidimensional y un ETL con validaciones.</li><li>Verificar la consistencia de los datos y analizar la eficiencia energética.</li></ol>
       </section>
 
       <section class="section" id="metodologia">
         <div class="section-heading"><div><span class="section-number">02 / PROCESO</span><h2>De la pregunta a la decisión</h2></div><p>Metodología CRISP-DM aplicada al proyecto.</p></div>
         <div class="steps"><div><span>01</span><strong>Comprensión del negocio</strong><p>Definir la necesidad, los usuarios y las preguntas.</p></div><div><span>02</span><strong>Comprensión de los datos</strong><p>Identificar fuentes, variables y calidad.</p></div><div><span>03</span><strong>Preparación</strong><p>Documentar la simulación, transformación y carga.</p></div><div><span>04</span><strong>Modelado</strong><p>Construir el modelo analítico y las medidas.</p></div><div><span>05</span><strong>Evaluación</strong><p>Validar cálculos, grupos y limitaciones.</p></div><div><span>06</span><strong>Despliegue</strong><p>Publicar y comunicar resultados y decisiones.</p></div></div>
         <p class="pending">Agregar fechas, responsables y enlaces a las evidencias reales de cada etapa en el cronograma.</p>
-        <h3>Desarrollo de la solución</h3><p class="pending">Describir usuarios, procesos, dispositivos, funcionalidades, arquitectura y tecnologías efectivamente utilizadas.</p>
+        <h3>Desarrollo de la solución</h3><p>Según el informe previo del equipo, un ESP32-S3 mide voltaje y corriente del panel solar y de la batería cada dos segundos. El panel carga una batería de litio y una tira LED representa el consumo de la vivienda. Dos sensores ACS712 y pantallas LCD complementan la maqueta.</p><p>El flujo descrito es ESP32 → MQTT → Node-RED → SQL Server → limpieza → SSIS → Data Warehouse. El habitante representa al usuario final; el administrador o estudiante monitorea los datos y ejecuta la preparación y el análisis. El informe también registra una incidencia de permisos para el envío de alertas por correo, cuya solución debe verificarse.</p><p class="pending">Confirmar las fechas del cronograma y el estado de la incidencia con evidencias de ejecución.</p>
       </section>
 
       <section class="section" id="datos">
         <div class="section-heading"><div><span class="section-number">03 / INFORMACIÓN</span><h2>Gestión de los datos</h2></div><p>Origen, preparación y trazabilidad para interpretar los resultados.</p></div>
-        <div class="data-grid"><article><span>01</span><h3>Fuente y alcance</h3><p>La fuente indicada para el proyecto es una base de datos en Supabase. Se debe confirmar qué tablas alimentan el Data Warehouse y documentar el período y el número de registros analizados.</p></article><article><span>02</span><h3>Modelos</h3><p class="pending">Describir las tablas y relaciones del modelo relacional y las dimensiones y hechos del modelo multidimensional.</p></article><article><span>03</span><h3>Simulación</h3><p class="pending">Documentar cómo se generó el millón de mediciones, sus variables, períodos, supuestos y conteo verificado.</p></article><article><span>04</span><h3>ETL y calidad</h3><p class="pending">Describir extracción, transformaciones y carga en SSIS; registrar reglas de calidad, faltantes y valores atípicos.</p></article></div>
+        <div class="data-grid"><article><span>01</span><h3>Fuente y alcance</h3><p>La consulta de Supabase reporta 1.000.000 de filas, del 1 de enero al 28 de julio de 2026, con 50 dispositivos y 50 ubicaciones con mediciones.</p></article><article><span>02</span><h3>Modelos</h3><p>El informe previo describe un OLTP en SQL Server con vivienda, dispositivo, telemetría, medición y alerta, y un DW con hechos por dispositivo, ubicación y hora. El esquema entregado para Supabase tiene otra tabla de hechos y cinco dimensiones; su correspondencia aún no se ha verificado.</p></article><article><span>03</span><h3>Simulación descrita</h3><p>El informe plantea cuatro dispositivos, 250.000 registros por dispositivo y una lectura cada dos segundos, entre el 1 y el 6 de octubre de 2026. Incluye variación día/noche, nubosidad y eventos simulados. Es un escenario diferente del diagnóstico de Supabase.</p></article><article><span>04</span><h3>ETL y calidad</h3><p>El flujo SSIS descrito carga dimensiones, convierte tipos, valida voltajes y claves, registra rechazos y agrega mediciones por hora. La carga incremental reprocesa desde la última hora de corte.</p><p class="pending">Confirmar la ejecución, los conteos de cada etapa y la relación con Supabase.</p></article></div>
+        <p>En el informe previo, 1.000 rechazos y 556 filas en el hecho son valores esperados; las tablas de resultados están pendientes. Una captura presenta conteos diferentes, por lo que no se consideran verificados sin conciliar las ejecuciones.</p>
       </section>
 
       <section class="section dashboard-section" id="dashboard">
         <div class="section-heading"><div><span class="section-number">04 / EXPLORACIÓN</span><h2>Dashboard de energía</h2></div><p>Generación, consumo y comportamiento de las mediciones.</p></div>
-        <div id="dashboard-container" class="dashboard-container"><div class="dashboard-placeholder"><div class="placeholder-icon" aria-hidden="true">↗</div><h3>Dashboard pendiente de integración</h3><p>Se necesita un informe publicado en Power BI Service y un enlace de inserción válido.</p><span>La visualización interactiva aparecerá aquí.</span></div></div>
-        <div class="dashboard-foot"><span><span class="status-dot"></span> INFORME INTERACTIVO</span><span id="dashboard-status">Pendiente de publicación en Power BI Service</span></div>
-        <p class="pending">Documentar fuente, período, registros, unidades, variables, reglas de calidad y filtros activos. Incluir cinco indicadores, tres análisis univariados, tres bivariados y uno multivariado calculado conjuntamente.</p>
+        <h3>Diagnóstico general</h3>
+        <p>Resultados de la <a href="DIAGNOSTICO-DATOS.sql">consulta SQL</a> ejecutada por el equipo, sin filtros adicionales. Período: 1 de enero de 2026, 00:00 a 28 de julio de 2026, 07:45.</p>
+        <div class="metrics" aria-label="Indicadores del diagnóstico">
+          <div><strong>1.000.000</strong><span>mediciones</span></div>
+          <div><strong>50</strong><span>dispositivos con mediciones</span></div>
+          <div><strong>50</strong><span>ubicaciones con mediciones</span></div>
+          <div><strong>80,54 Wh</strong><span>generación promedio por medición</span></div>
+          <div><strong>72,75 Wh</strong><span>consumo promedio por medición</span></div>
+          <div><strong>53,43 %</strong><span>nivel promedio de batería</span></div>
+        </div>
+        <p>Los promedios se calculan sobre registros no nulos: en estos tres campos se reportaron 1.000.000 de valores no nulos. No equivalen a totales ni confirman que los dispositivos estén activos actualmente. Debe verificarse la duración y el significado de cada lectura antes de sumar energía.</p>
+        <div class="charts">
+          <figure class="chart" id="grafica-energia">
+            <figcaption><span class="section-number">GRÁFICA 01 / SUPABASE</span><h3>Energía promedio por medición</h3><p>Wh por medición · 1.000.000 de registros no nulos por variable</p></figcaption>
+            <div class="bar-row"><span>Generación</span><div class="bar-track"><div class="bar-fill generation" style="width:80.54%"></div></div><strong>80,54 Wh</strong></div>
+            <div class="bar-row"><span>Consumo</span><div class="bar-track"><div class="bar-fill consumption" style="width:72.75%"></div></div><strong>72,75 Wh</strong></div>
+            <div class="chart-axis"><span>0 Wh</span><span>100 Wh</span></div>
+            <p class="chart-note">Promedios generales, no totales ni balance energético. No describen por sí solos la distribución o variación temporal.</p>
+          </figure>
+          <figure class="chart" id="grafica-bateria">
+            <figcaption><span class="section-number">GRÁFICA 02 / SUPABASE</span><h3>Nivel promedio de batería</h3><p>Porcentaje · 1.000.000 de registros no nulos</p></figcaption>
+            <div class="bar-row battery-row"><span>Nivel promedio</span><div class="bar-track"><div class="bar-fill battery" style="width:53.43%"></div></div><strong>53,43 %</strong></div>
+            <div class="chart-axis"><span>0 %</span><span>100 %</span></div>
+            <p class="chart-note">Es el promedio de los niveles registrados, no una medición actual ni la proporción de baterías cargadas.</p>
+          </figure>
+        </div>
+        <p>Ambas gráficas usan el período completo del diagnóstico de Supabase: 1 de enero de 2026, 00:00 a 28 de julio de 2026, 07:45, sin filtros adicionales. No describen el escenario de octubre del informe previo.</p>
+        <div id="dashboard-container" class="dashboard-container"><div class="dashboard-placeholder"><div class="placeholder-icon" aria-hidden="true">↗</div><h3>Dashboard interactivo no incluido</h3><p>Esta versión no contiene un informe de Power BI. Los resultados del análisis se documentarán a partir de consultas verificables a la base de datos.</p><span>El requisito de integración interactiva permanece sin cumplir.</span></div></div>
+        <div class="dashboard-foot"><span>ANÁLISIS DE DATOS</span><span id="dashboard-status">Informe interactivo no disponible</span></div>
+        <p class="pending">Faltan las distribuciones, comparaciones por grupos y el análisis multivariado conjunto. Las gráficas anteriores no sustituyen el informe interactivo solicitado.</p>
       </section>
 
       <section class="section" id="hallazgos">
@@ -81,7 +108,7 @@
 
       <section class="section" id="cierre">
         <div class="section-heading"><div><span class="section-number">07 / CIERRE</span><h2>Conclusiones y fuentes</h2></div><p>Lo que se logró, lo que falta y de dónde viene la información.</p></div>
-        <div class="content-grid"><article><h3>Productos y resultados</h3><p class="pending">Distinguir productos esperados y alcanzados, con enlaces a evidencias verificables de funcionamiento.</p><h3>Conclusiones y limitaciones</h3><p class="pending">Evaluar el cumplimiento de los objetivos y documentar límites de los datos y oportunidades de mejora.</p></article><article><h3>Marco referencial y referencias</h3><p class="pending">Añadir antecedentes y fuentes consultadas, con autor, fecha y enlace verificable. No incluir fuentes no consultadas.</p><h3>Validación</h3><p>Comprobar cálculos y tamaños de grupo; revisar faltantes y valores inusuales antes de excluirlos. Presentar las relaciones observadas como asociaciones, no como causalidad.</p></article></div>
+        <div class="content-grid"><article><h3>Productos y resultados</h3><p>El informe previo incluye fotografías de la maqueta, diagramas, capturas de Node-RED y una descripción del ETL. El diagnóstico de Supabase aporta indicadores generales para un segundo conjunto de datos.</p><h3>Conclusiones y limitaciones</h3><p>El prototipo permite estudiar la adquisición y preparación de datos energéticos. Queda pendiente conciliar fuentes, validar resultados por grupo, documentar las decisiones y publicar el sitio. No se incluye Power BI interactivo.</p></article><article><h3>Fuentes</h3><p>Informe previo «Energía sostenible», compartido por el equipo, 2026: contexto de la maqueta, modelos, simulación y ETL, páginas 2 a 17. Diagnóstico de Supabase proporcionado por el equipo mediante la consulta SQL indicada en esta página.</p><h3>Validación</h3><p>Comprobar cálculos y tamaños de grupo; revisar faltantes y valores inusuales antes de excluirlos. Presentar las relaciones observadas como asociaciones, no como causalidad.</p></article></div>
       </section>
       <footer><span>ENERGÍA / COMUNIDAD</span><span>Proyecto de gestión del conocimiento · Ciudad inteligente</span><a href="#inicio">Volver arriba ↑</a></footer>
     </main>

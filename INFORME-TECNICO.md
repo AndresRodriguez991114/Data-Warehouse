@@ -1,18 +1,24 @@
-# Informe técnico: proyecto de energía solar comunitaria
+# Informe técnico: Energía sostenible
 
 **Estado:** plantilla pendiente de completar y verificar. Eliminar esta nota solo cuando se hayan sustituido todos los campos entre corchetes y se hayan incorporado evidencias reales.
 
 ## Identificación
 
-- Proyecto: [nombre oficial].
-- Programa, sede o extensión y ciclo: [datos].
-- Integrantes y tipo de proyecto: [datos].
+- Proyecto: Energía sostenible.
+- Institución: Universidad de Cundinamarca. Referencia académica en la portada: Big Data.
+- Programa académico: Ingeniería de Sistemas y Computación.
+- Sede o extensión: Extensión Chía.
+- Integrantes: Cesar Eduardo Bolivar Gonzalez y Andres Yesid Rodriguez Bermudez.
+- Docente: Edison Gustavo Canon Varela.
+- Año de la portada: 2026.
 - URL del sitio publicado: [URL comprobada].
 - Fecha de elaboración: [fecha].
 
 ## 1. Problema, justificación y objetivos
 
-Describir el problema concreto de generación solar y consumo, su contexto y población beneficiaria. Registrar el objetivo general y los específicos aprobados. Explicar la pertinencia de la solución y sus antecedentes con citas verificables.
+El proyecto aborda la necesidad de observar la generación y el consumo para analizar la gestión energética. Según el informe previo del equipo, el módulo corresponde a la Casa 1, una maqueta de vivienda inteligente en Cajicá. Su panel carga una batería que alimenta una tira de LED representativa del consumo. El prototipo beneficia el aprendizaje y el monitoreo del equipo; no prueba el abastecimiento de viviendas reales ni de todo el municipio.
+
+El objetivo del informe previo es implementar almacenamiento y preparación de datos mediante un modelo relacional, simulación de mediciones, modelo multidimensional y ETL en SSIS. Sus objetivos específicos comprenden representar dispositivos y eventos, simular mediciones, diseñar el esquema estrella, validar la carga y responder preguntas sobre eficiencia energética. [Completar antecedentes externos consultados, si existen].
 
 ## 2. Estructura del sitio
 
@@ -31,21 +37,38 @@ El sitio organiza el proyecto en secciones de contexto, metodología, gestión d
 
 ## 4. Desarrollo de la solución
 
-Describir módulo, usuarios, procesos, dispositivos, funcionalidades, arquitectura y tecnologías efectivamente utilizadas. [Incluir diagrama o captura real y explicar el flujo]. Distinguir productos esperados de productos alcanzados, con evidencias de funcionamiento.
+El informe previo describe un ESP32-S3, panel de 0 a 6 V, batería de litio, dos sensores ACS712, divisores resistivos y dos pantallas LCD. El microcontrolador mide voltaje y corriente cada dos segundos; una tira de LED representa la carga. Los actores descritos son el habitante de la casa y el administrador o estudiante que monitorea y prepara la información.
+
+El flujo descrito es ESP32 → MQTT → Node-RED → SQL Server (`Telemetria_Real`) → limpieza → `Medicion` → SSIS → Data Warehouse → análisis. El informe anterior contiene fotografías, capturas del flujo y tableros, y describe una incidencia de permisos al enviar alertas por correo. [Incorporar las evidencias disponibles y comprobar el estado de la incidencia].
 
 ## 5. Origen y preparación de los datos
 
-- Fuente y tablas del Data Warehouse: [identificarlas; Supabase es la fuente indicada, pero debe confirmarse el flujo].
-- Período analizado, fecha de extracción y número de registros: [valores verificados].
+- Fuente y tablas del Data Warehouse: el esquema proporcionado en Supabase incluye `fact_medicion_solar` y las dimensiones `dim_fecha`, `dim_hora`, `dim_clima`, `dim_dispositivo` y `dim_ubicacion`. [Confirmar el flujo y las relaciones].
+- Período y registros reportados por la consulta: 1.000.000 de mediciones, del 1 de enero de 2026 a las 00:00 al 28 de julio de 2026 a las 07:45. La fecha de extracción está pendiente de documentar; las fechas se almacenan sin zona horaria.
 - Variables, unidades, granularidad y claves: [detalles].
-- Modelo relacional y multidimensional: [tablas, hechos, dimensiones y relaciones; incluir diagramas reales].
-- Simulación del millón de mediciones: [procedimiento, variables, supuestos, período y conteo realmente comprobado].
-- ETL en SSIS: [origen, extracción, transformaciones, destino, ejecución y evidencia].
-- Calidad: [reglas, registros faltantes, duplicados, valores inválidos y atípicos; decisiones y conteos].
+- Modelo relacional y multidimensional del informe previo: en SQL Server, `Barrio`, `Casa`, `Lugar_Publico`, `Dispositivo`, `Telemetria_Real`, `Medicion` y `Alerta`; el DW descrito contiene `Fact_Mediciones` y dimensiones de tiempo, dispositivo y ubicación. La granularidad declarada es dispositivo × ubicación × hora. [Incluir diagramas y validar su correspondencia con Supabase].
+- Simulación descrita en el informe previo: cuatro dispositivos con 250.000 registros cada uno, cada dos segundos, entre el 1 y el 6 de octubre de 2026; generación con perfil día/noche y variación de nubosidad, carga y eventos. Son parámetros del escenario documentado, no evidencia de que correspondan a los datos consultados en Supabase.
+- ETL en SSIS descrito: carga de dimensiones, marca de agua, extracción, conversión, validación de voltajes y búsqueda de claves, registro de rechazos y agregación por hora; se reprocesa desde el inicio de la última hora de corte. El informe señala 1.000 rechazos y 556 filas de hechos como resultados esperados, pero sus campos de resultados están vacíos. [Verificar ejecución y conteos].
+- Calidad: la consulta reportó cero faltantes en fecha y hora, claves de dispositivo y ubicación, generación, consumo y nivel de batería; cero valores negativos de generación o consumo; y cero niveles de batería fuera de 0 a 100 %. Esto no comprueba duplicados, integridad referencial ni otros valores atípicos. [Documentar reglas del ETL y revisión adicional].
+
+**Diferencias pendientes de conciliación:** el diagnóstico de Supabase reporta enero-julio de 2026 y 50 dispositivos, mientras que el escenario del informe previo describe octubre de 2026 y cuatro dispositivos. Una captura del informe muestra 1.003.209 extraídos, 249.956 filas cargadas y cero rechazos, distintos de los valores esperados de su tabla. Otra captura reporta generación nocturna, aunque el escenario esperado indica cero. No se conoce si corresponden a ejecuciones o conjuntos distintos; no mezclar sus cifras ni presentar los valores esperados como resultados observados.
 
 ## 6. Indicadores y análisis
 
-Para cada uno de los cinco indicadores, registrar pregunta, definición o medida, unidad, numerador y denominador cuando corresponda, filtros y resultado. Explicar cómo se evita sumar potencias como si fueran energía o duplicar mediciones.
+El equipo proporcionó el resultado de `DIAGNOSTICO-DATOS.sql` para toda la tabla, sin filtros adicionales:
+
+| Indicador | Definición y resultado |
+| --- | --- |
+| Mediciones | 1.000.000 filas. |
+| Dispositivos con mediciones | 50 claves de dispositivo distintas; no implica que estén activos actualmente. |
+| Ubicaciones con mediciones | 50 claves de ubicación distintas. |
+| Generación promedio | 80,54 Wh por medición, sobre 1.000.000 valores no nulos. |
+| Consumo promedio | 72,75 Wh por medición, sobre 1.000.000 valores no nulos. |
+| Nivel de batería promedio | 53,43 %, sobre 1.000.000 valores no nulos. |
+
+Los promedios son por medición, no totales. No se debe concluir un balance energético ni sumar Wh hasta conocer si las lecturas son incrementales, no superpuestas y comparables. Los resultados fueron proporcionados por el equipo y deben acompañarse de la evidencia de ejecución y fecha de extracción.
+
+El sitio presenta dos gráficas preliminares con estos resultados: una compara los promedios de generación y consumo y otra muestra el nivel medio de batería. Ambas abarcan el período completo de Supabase sin filtros adicionales y usan un millón de valores no nulos por variable. No muestran distribuciones ni tendencias y no sustituyen los análisis y la integración interactiva exigidos. [Añadir capturas legibles y verificar los resultados en la fuente].
 
 | Visualización | Tipo | Pregunta y variables | Procedimiento y filtros | Resultado, unidad y número de registros |
 | --- | --- | --- | --- | --- |
@@ -76,7 +99,7 @@ Repetir la siguiente ficha cinco veces, con una visualización correspondiente a
 
 ## 8. Validación
 
-Registrar cómo se contrastó cada resultado con los datos originales o una consulta reproducible, la cantidad de registros de los grupos comparados y el tratamiento de faltantes y atípicos. [Anexar consultas o capturas]. Explicar por qué las asociaciones observadas no demuestran causalidad.
+La consulta de diagnóstico de Supabase fue facilitada por el equipo; queda pendiente repetirla o conservar una captura, registrar la fecha de extracción y contrastar el resultado con la fuente. También es necesario conciliar los períodos, dispositivos, conteos y resultados nocturnos mencionados en la sección 5. Registrar tamaños de grupo y tratamiento de faltantes y atípicos; las asociaciones no demuestran causalidad. [Anexar consultas y capturas].
 
 ## 9. Dos decisiones sustentadas
 
@@ -90,10 +113,12 @@ Registrar cómo se contrastó cada resultado con los datos originales o una cons
 
 ## 10. Publicación e integración
 
-URL del sitio: [completar]. Modalidad de inserción de Power BI: [completar]. Permisos del docente: [verificación]. Prueba de carga y filtros: [fecha y resultado]. [Insertar capturas de GitHub Pages y del informe interactivo funcionando].
+URL del sitio: [completar y verificar]. El dashboard interactivo de Power BI no está incluido en esta versión, por lo que el requisito de integración y su prueba de filtros permanecen sin cumplir. [Insertar evidencias reales de publicación del sitio].
 
 ## 11. Conclusiones y referencias
 
 [Evaluar el cumplimiento de cada objetivo, limitaciones, oportunidades de mejora y aporte al contexto].
 
-[Listar únicamente las fuentes consultadas, con autor, título, fecha y URL cuando corresponda].
+- Bolivar Gonzalez, Cesar Eduardo y Rodriguez Bermudez, Andres Yesid. *Energía sostenible*. Documento del proyecto compartido por el equipo, 2026, páginas 2-17 y anexos.
+- Resultado de la consulta de diagnóstico de Supabase proporcionado por el equipo. [Fecha de extracción pendiente].
+- [Agregar otras fuentes efectivamente consultadas].

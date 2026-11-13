@@ -2,6 +2,10 @@
 
 Este material es una base, no una entrega terminada. Los textos marcados como pendientes, los datos, el informe interactivo, la publicación y las evidencias deben completarse con el proyecto real. No publicar contraseñas, cadenas de conexión ni claves privadas.
 
+Para la versión sin Power BI, ejecutar `DIAGNOSTICO-DATOS.sql` y `ANALISIS-AGRUPADO.sql` en Supabase, por separado, y compartir los resultados agregados para completar el análisis. Exportar todas las filas de la segunda consulta y comprobar que la suma de `mediciones` coincida con el diagnóstico; una vista o exportación limitada no representa todos los datos. El análisis directo y sus gráficos no sustituyen el requisito del dashboard interactivo.
+
+Para las distribuciones, ejecutar también `ANALISIS-UNIVARIADO.sql` y exportar el resultado completo. Los valores de consumo y generación se agrupan en tramos de 10 Wh: cada inicio representa el intervalo desde ese valor inclusive hasta 10 Wh más, sin incluir el límite superior; un inicio vacío indica dato faltante. En cada una de las tres variables la suma de `mediciones` debe coincidir con el diagnóstico. Los casos con claves sin correspondencia o duplicadas se conservan para investigarlos.
+
 ## 1. Completar el sitio
 
 1. Abrir `index.html` en el navegador para revisar el sitio.
@@ -10,6 +14,8 @@ Este material es una base, no una entrega terminada. Los textos marcados como pe
 4. Añadir enlaces o capturas de las evidencias reales y las fuentes consultadas. No presentar la foto ilustrativa como evidencia del proyecto.
 
 ## 2. Construir el informe en Power BI Desktop
+
+Para las tablas reales del proyecto, seguir también `POWER-BI-PASO-A-PASO.md` y ejecutar `DIAGNOSTICO-DATOS.sql` en Supabase.
 
 1. Obtener la tabla de hechos y las dimensiones **ya cargadas en el Data Warehouse**, o una exportación autorizada que conserve los datos y relaciones. La URL de Supabase por sí sola no identifica las tablas ni proporciona acceso. Registrar fuente, fecha de extracción, período, conteo de filas y unidades.
 2. Revisar el modelo y las relaciones. En Power Query, documentar tipos, duplicados, fechas inválidas, faltantes y valores atípicos; investigar estos últimos antes de decidir si corresponde excluirlos. No afirmar que existen un millón de mediciones sin comprobar el conteo.
@@ -42,7 +48,7 @@ Power BI Desktop no genera por sí solo un informe interactivo insertable en el 
 
 ## 4. Publicar con GitHub Pages
 
-1. Subir los archivos del sitio (`index.html`, `styles.css`, `data.js` y `app.js`) a un repositorio de GitHub autorizado. Revisar que no contengan secretos ni datos sensibles.
+1. Subir los archivos del sitio (`index.html`, `styles.css`, `data.js`, `app.js` y `DIAGNOSTICO-DATOS.sql`) a un repositorio de GitHub autorizado. Revisar que no contengan secretos ni datos sensibles.
 2. En GitHub, abrir **Settings > Pages**, seleccionar **Deploy from a branch**, la rama correspondiente y la carpeta `/ (root)`, y guardar.
 3. Abrir la URL que aparece en Pages cuando el despliegue termine. Revisar todas las secciones, el diseño móvil y el informe integrado con los permisos del docente. Tomar capturas de la publicación y del informe funcionando.
 
