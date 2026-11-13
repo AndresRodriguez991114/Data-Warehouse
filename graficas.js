@@ -123,9 +123,8 @@
     renderCombined();
     const date = value => value ? String(value).replace("T", " ").slice(0, 19) : "Sin fecha";
     document.getElementById("exploration-period").textContent = `Período: ${date(data.primera_medicion)} a ${date(data.ultima_medicion)} · ${whole.format(Number(data.mediciones_total))} mediciones en la fuente · sin filtros generales.`;
-    document.getElementById("exploration-limitations").textContent = `Se omiten grupos con menos de 10 mediciones: ${whole.format(Number(data.grupos_omitidos))} grupos (${whole.format(Number(data.mediciones_omitidas))} mediciones) y ${whole.format(Number(data.tramos_omitidos))} tramos. La omisión puede cambiar los resultados. El umbral no garantiza anonimato; promedios por medición no son totales de energía.`;
     const calculated = new Date(data.calculado_en);
-    status.textContent = Number.isFinite(calculated.getTime()) ? `Caché de gráficas calculada: ${calculated.toLocaleString("es-CO", { timeZone: "UTC" })} UTC.` : "Hora de cálculo no disponible.";
+    status.textContent = Number.isFinite(calculated.getTime()) ? `Gráficas calculadas: ${calculated.toLocaleString("es-CO", { timeZone: "UTC" })} UTC.` : "Hora de cálculo no disponible.";
   }
 
   async function refresh() {

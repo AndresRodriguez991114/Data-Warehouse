@@ -7,7 +7,7 @@ window.PROJECT_DATA = {
     ["Referencia académica", "Big Data"],
     ["Programa académico", "Ingeniería de Sistemas y Computación"],
     ["Sede o extensión", "Extensión Chía"],
-    ["Integrantes", "Cesar Eduardo Bolivar Gonzalez y Andres Yesid Rodriguez Bermudez"],
+    ["Integrantes", "Cesar Eduardo Bolivar Gonzalez Andres Rodriguez"],
     ["Docente", "Edison Gustavo Canon Varela"],
     ["Año de portada", "2026"]
   ],

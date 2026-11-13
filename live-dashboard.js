@@ -59,7 +59,7 @@
     setText("chart-bateria", display(battery, "%"));
     setText("energy-denominators", `Wh por medición · generación: ${whole.format(counts[3])}; consumo: ${whole.format(counts[4])} valores no nulos`);
     setText("battery-denominator", `Porcentaje · ${whole.format(counts[5])} registros no nulos`);
-    setText("live-period", `Sin filtros adicionales. Período: ${dateText(summary.primera_medicion)} a ${dateText(summary.ultima_medicion)}.`);
+    setText("live-period", ` Período: ${dateText(summary.primera_medicion)} a ${dateText(summary.ultima_medicion)}.`);
 
     const maximum = Math.max(100, Math.ceil(Math.max(0, generation || 0, consumption || 0) / 10) * 10);
     setText("energy-axis-max", `${number.format(maximum)} Wh`);

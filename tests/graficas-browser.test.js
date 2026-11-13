@@ -32,6 +32,8 @@ test("gráficas renderizan y el filtro combina variables en escritorio y móvil"
     });
     const page = await context.newPage();
     await page.goto(pathToFileURL(path.resolve("index.html")).href);
+    const logoLoaded = await page.locator('img[src="Logo.png"]').evaluateAll(images => Promise.all(images.map(image => image.decode().then(() => image.naturalWidth > 0))));
+    assert.deepEqual(logoLoaded, [true]);
     await page.locator("#exploration-content").waitFor({ state: "visible", timeout: 15000 });
     assert.equal(await page.locator(".exploration-chart canvas").count(), 9);
     assert.equal(await page.locator("#knowledge-list details").count(), 5);
