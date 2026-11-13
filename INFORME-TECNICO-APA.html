@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe técnico: Energía sostenible</title>
+<style>
+@page { size: Letter; margin: 2.54cm; @top-right { content: counter(page); font: 10pt "Times New Roman", serif; } }
+* { box-sizing: border-box; }
+html { color: #111; background: #fff; }
+body { margin: 0; font: 12pt/2 "Times New Roman", Times, serif; }
+.cover { height: 9in; page-break-after: always; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.cover img { display: block; width: 185px; height: auto; margin: .28in auto .36in; }
+.cover-title { margin: 0 0 .78in; font-size: 15pt; font-weight: bold; line-height: 1.5; }
+.cover-authors { margin: 0 0 .92in; font-weight: bold; line-height: 2.6; text-transform: uppercase; }
+.cover-course { margin: 0 0 .9in; font-weight: bold; }
+.cover-teacher { margin: 0 0 .72in; font-weight: bold; text-transform: uppercase; }
+.cover-institution { margin: 0 0 .25in; font-size: 11pt; font-weight: bold; text-transform: uppercase; }
+.cover-year { margin: 0; font-weight: bold; }
+main { width: 100%; }
+h1 { font-size: 12pt; text-align: center; margin: 0 0 1em; line-height: 2; }
+h2 { font-size: 12pt; text-align: center; margin: 1.2em 0 .35em; line-height: 2; }
+h3 { font-size: 12pt; text-align: left; margin: 1em 0 .25em; line-height: 2; }
+h4 { font-size: 12pt; font-style: italic; text-align: left; margin: .8em 0 .2em; line-height: 2; }
+p { margin: 0 0 .55em; text-indent: .5in; orphans: 3; widows: 3; }
+.no-indent, .abstract, .keywords, .note, .caption, .references p, .table-note { text-indent: 0; }
+.abstract { text-align: justify; }
+.keywords { margin-top: .5em; }
+ul, ol { margin: 0 0 .65em .5in; padding-left: .35in; }
+li { padding-left: .08in; margin-bottom: .15em; }
+li p { text-indent: 0; margin: 0; }
+table { width: 100%; border-collapse: collapse; margin: .55em 0 .25em; font-size: 8.5pt; line-height: 1.25; page-break-inside: auto; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; }
+th, td { border: 0; border-bottom: .5pt solid #777; padding: 4pt 4pt; vertical-align: top; text-align: left; }
+thead th { border-top: 1pt solid #111; border-bottom: 1pt solid #111; font-weight: bold; }
+caption { caption-side: top; text-align: left; font-size: 10pt; font-weight: bold; margin-bottom: 3pt; }
+caption em { display: block; font-weight: normal; }
+.table-note { font-size: 9pt; line-height: 1.4; margin: 0 0 .5em; }
+strong { font-weight: bold; }
+code { font: 9.5pt "Courier New", monospace; }
+a { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+.references { page-break-before: always; }
+.references p { padding-left: .5in; text-indent: -.5in; line-height: 2; margin-bottom: .45em; overflow-wrap: anywhere; }
+.callout { border-left: 2pt solid #555; margin: .7em 0; padding: .2em .5in; font-size: 10.5pt; line-height: 1.5; }
+@media screen { body { max-width: 8.5in; margin: 0 auto; padding: 1in; box-shadow: 0 0 12px #ccc; } .cover { min-height: 9in; } }
+</style>
+</head>
+<body>
+<section class="cover" aria-label="Portada">
+  <img src="Logo.png" alt="Universidad de Cundinamarca">
+  <p class="cover-title">ENERGÍA SOSTENIBLE</p>
+  <p class="cover-authors">CESAR EDUARDO BOLIVAR GONZALEZ<br>ANDRES YESID RODRIGUEZ BERMUDEZ</p>
+  <p class="cover-course">BIG DATA</p>
+  <p class="cover-teacher">EDISON GUSTAVO CANON VARELA</p>
+  <p class="cover-institution">UNIVERSIDAD DE CUNDINAMARCA</p>
+  <p class="cover-year">2026</p>
+</section>
+<main>
+<h1>Informe técnico: Energía sostenible</h1>
+<h2>Resumen</h2>
+<p class="abstract">Este informe presenta el análisis descriptivo de un conjunto de un millón de mediciones de generación y consumo solar consultadas en Supabase, correspondientes al período comprendido entre el 1 de enero y el 28 de julio de 2026. Se describen la arquitectura reportada del prototipo, la preparación de datos y los resultados de distribuciones y promedios por condición climática, franja horaria y mes. La generación se concentró entre 0 y menos de 10 Wh (51,49 %); el consumo promedio por medición fue de 93,58 Wh en la noche y 38,89 Wh en la madrugada. Estos resultados describen registros y no equivalen a totales de energía ni demuestran causalidad. No se suministraron fotografías de las pruebas ni capturas de ejecución para anexar; por ello, el informe diferencia los resultados comunicados de las evidencias documentales pendientes. También se identifican límites de trazabilidad, granularidad e integración con Power BI.</p>
+<p class="keywords"><strong>Palabras clave:</strong> energía solar, análisis de datos, almacén de datos, consumo energético, CRISP-DM.</p>
+
+<h2>Problema, justificación y objetivos</h2>
+<p>El proyecto aborda la necesidad de observar la generación y el consumo para analizar la gestión energética. Según la documentación técnica suministrada por el equipo, el módulo corresponde a la Casa 1, una maqueta de vivienda inteligente en Cajicá. Su panel carga una batería que alimenta una tira de LED representativa del consumo. El prototipo beneficia el aprendizaje y el monitoreo del equipo; no prueba el abastecimiento de viviendas reales ni de todo el municipio.</p>
+<p>La motivación es integrar mediciones de generación y consumo con un flujo de almacenamiento y análisis que permita describir patrones y apoyar preguntas de gestión. El alcance de este informe se limita a la maqueta y al conjunto consultado; no incluye una evaluación de impacto, ahorro económico o desempeño de instalaciones residenciales reales. No se recibieron fuentes externas adicionales sobre antecedentes específicos del proyecto.</p>
+<p><strong>Objetivo general.</strong> Describir el proceso de almacenamiento, preparación y análisis de mediciones energéticas de la Casa 1.</p>
+<p><strong>Objetivos específicos.</strong> Representar dispositivos y eventos mediante un modelo relacional; describir la simulación de mediciones; documentar el esquema multidimensional y el proceso ETL en SSIS; resumir las verificaciones reportadas; y responder preguntas descriptivas sobre generación, consumo y nivel de batería.</p>
+
+<h2>Estructura del sitio</h2>
+<p>El sitio organiza el proyecto en secciones de contexto, metodología, gestión de datos, dashboard, conocimientos, decisiones y cierre. Está construido con HTML, CSS y JavaScript, utiliza gráficas con Chart.js y consulta agregados publicados en Supabase. El equipo reportó que la página publicada carga y que el selector de mes modifica la tabla del análisis multivariado (Equipo del proyecto, 2026a). No se suministraron capturas de la versión publicada para anexar a este informe.</p>
+
+<h2>Metodología y cronograma CRISP-DM</h2>
+<p>El proceso se organiza según las fases de comprensión del negocio, comprensión de los datos, preparación, modelado, evaluación y despliegue de CRISP-DM (Chapman et al., 2000). La tabla distingue actividades descritas de las fechas y evidencias no disponibles.</p>
+<table><caption>Tabla 1<br><em>Actividades descritas por fase de CRISP-DM</em></caption>
+<thead><tr><th>Etapa</th><th>Actividades descritas</th><th>Fecha y responsable</th><th>Evidencia referida</th></tr></thead>
+<tbody>
+<tr><td>Comprensión del negocio</td><td>Definir el monitoreo de generación y consumo de la Casa 1.</td><td>Fecha y responsable por actividad no especificados.</td><td>Documento técnico del equipo, páginas 2 y 5: contexto, usuarios y procesos.</td></tr>
+<tr><td>Comprensión de los datos</td><td>Identificar las lecturas del panel, la batería y el flujo de telemetría.</td><td>Se menciona una fotografía de la maqueta fechada el 11 de noviembre de 2026; no se indica la fecha de toda la etapa.</td><td>Documento técnico del equipo, páginas 2 a 4: componentes, flujo y capturas descritas.</td></tr>
+<tr><td>Preparación</td><td>Describir limpieza, simulación y reglas de calidad.</td><td>El escenario simulado abarca del 1 al 6 de octubre de 2026; no es una fecha de ejecución verificada.</td><td>Documento técnico del equipo, páginas 8 a 11 y 15 a 16.</td></tr>
+<tr><td>Modelado</td><td>Diseñar el modelo relacional, el esquema estrella y el proceso SSIS descrito.</td><td>Fecha y responsable por actividad no especificados.</td><td>Documento técnico del equipo, páginas 7 y 12 a 16.</td></tr>
+<tr><td>Evaluación</td><td>Proponer verificaciones de rangos, claves, conteos, rechazos y análisis.</td><td>Fecha de ejecución no especificada.</td><td>Documento técnico del equipo, páginas 11 y 16 a 21; varios resultados no están diligenciados.</td></tr>
+<tr><td>Despliegue</td><td>Publicar el sitio web y comunicar resultados.</td><td>Fecha exacta de publicación por documentar.</td><td>URL de Vercel reportada; falta captura de la versión final y no se incluye Power BI interactivo.</td></tr>
+</tbody></table>
+<p class="table-note"><strong>Nota.</strong> La documentación suministrada no permite reconstruir fechas y responsables para cada etapa. El intervalo simulado y la fecha atribuida a una fotografía no se presentan como fechas de ejecución de todo el proyecto.</p>
+
+<h2>Desarrollo de la solución</h2>
+<p>La documentación técnica describe un ESP32-S3, un panel de 0 a 6 V, una batería de litio de 3,7 V, dos sensores ACS712, divisores resistivos y dos pantallas LCD 16×2. El microcontrolador mide voltaje y corriente cada dos segundos; una tira de LED representa la carga. Los actores descritos son el habitante de la casa y el administrador o estudiante que monitorea y prepara la información.</p>
+<p>El flujo descrito es ESP32 → MQTT → Node-RED → SQL Server (<code>Telemetria_Real</code>) → limpieza → <code>Medicion</code> → SSIS → Data Warehouse → análisis. La documentación de referencia menciona una incidencia de permisos al enviar alertas por correo, pero su estado actual no se pudo comprobar. No se suministraron fotografías de las pruebas ni capturas del flujo o de los tableros para anexar. Esta ausencia es una limitación documental y no demuestra que las pruebas no se hayan realizado.</p>
+<p>Los productos definidos son el modelo relacional, la simulación de un millón de mediciones, el esquema estrella, el paquete ETL y el análisis. La documentación describe fotografías, capturas, diagramas y scripts, pero esos archivos visuales no se recibieron para incorporarlos o verificar sus resultados. Las cantidades de diseño se mantienen separadas de los resultados observados.</p>
+
+<h2>Origen y preparación de los datos</h2>
+<ul>
+<li><strong>Fuente y esquema.</strong> El esquema consultado en Supabase incluye <code>fact_medicion_solar</code> y las dimensiones <code>dim_fecha</code>, <code>dim_hora</code>, <code>dim_clima</code>, <code>dim_dispositivo</code> y <code>dim_ubicacion</code>. La correspondencia de sus relaciones con el flujo de SQL Server no se verificó de forma independiente.</li>
+<li><strong>Período y volumen.</strong> La consulta reportó 1.000.000 de mediciones del 1 de enero de 2026 a las 00:00 al 28 de julio de 2026 a las 07:45. La fecha de extracción original está pendiente; la caché analizada tiene fecha y hora conocidas. Las fechas se almacenan sin zona horaria.</li>
+<li><strong>Variables y granularidad.</strong> Se identifican fecha y hora, claves de dispositivo, ubicación y clima, generación y consumo en Wh, irradiancia en W/m², temperatura en °C y nivel de batería en %. En el informe del prototipo, la captura ocurre cada dos segundos y el hecho de SQL Server se describe agregado por dispositivo, ubicación y hora; no se confirmó que esa granularidad aplique a Supabase.</li>
+<li><strong>Modelos descritos.</strong> Para SQL Server se describen las tablas <code>Barrio</code>, <code>Casa</code>, <code>Lugar_Publico</code>, <code>Dispositivo</code>, <code>Telemetria_Real</code>, <code>Medicion</code> y <code>Alerta</code>. El DW descrito contiene <code>Fact_Mediciones</code> y dimensiones de tiempo, dispositivo y ubicación, con granularidad declarada dispositivo × ubicación × hora. No se incluyen diagramas ni se afirma equivalencia con Supabase.</li>
+<li><strong>Simulación.</strong> El diseño describe cuatro dispositivos con 250.000 registros cada uno, cada dos segundos, entre el 1 y el 6 de octubre de 2026. Declara 50.000 picos de consumo, 20.000 eventos de batería baja y 1.000 fallas de sensor inyectadas. Son parámetros definidos o esperados, no resultados verificados en Supabase.</li>
+<li><strong>ETL.</strong> El proceso SSIS descrito carga dimensiones, maneja marca de agua, extrae y convierte datos, valida voltajes y claves, registra rechazos y agrega por hora. El diseño rechaza voltaje de panel fuera de 0–6 V, voltaje de batería fuera de 3,0–4,2 V o claves sin coincidencia; también documenta sustitución de energías nulas por cero. Estas reglas corresponden al flujo descrito de SQL Server y no deben aplicarse sin verificación a Supabase. Los 1.000 rechazos y las 556 filas de hechos aparecen como resultados esperados, no como valores comprobados.</li>
+<li><strong>Calidad.</strong> La consulta reportó cero faltantes en fecha y hora, claves de dispositivo y ubicación, generación, consumo y nivel de batería; cero valores negativos de generación o consumo; y cero niveles de batería fuera de 0 a 100 %. Esto no comprueba duplicados, integridad referencial ni otros valores atípicos, cuya revisión continúa pendiente de evidencia.</li>
+</ul>
+<p><strong>Diferencias pendientes de conciliación.</strong> El diagnóstico de Supabase reporta enero-julio de 2026 y 50 dispositivos; el escenario del informe previo describe octubre de 2026 y cuatro dispositivos. Una captura descrita en la documentación muestra 1.003.209 registros extraídos, 249.956 filas cargadas y cero rechazos, distintos de los valores esperados en su tabla. Otra captura reporta generación nocturna, aunque el escenario esperado indica cero. No se conoce si corresponden a ejecuciones o conjuntos distintos; por ello, no se mezclan las cifras ni se presentan expectativas como resultados observados.</p>
+
+<h2>Indicadores y análisis</h2>
+<p>El equipo proporcionó el resultado de <code>DIAGNOSTICO-DATOS.sql</code> para toda la tabla, sin filtros adicionales (Equipo del proyecto, 2026b).</p>
+<table><caption>Tabla 2<br><em>Indicadores descriptivos del conjunto consultado</em></caption><thead><tr><th>Indicador</th><th>Definición y resultado reportado</th></tr></thead><tbody>
+<tr><td>Mediciones</td><td>1.000.000 de filas.</td></tr>
+<tr><td>Dispositivos con mediciones</td><td>50 claves distintas; no implica que estén activos actualmente.</td></tr>
+<tr><td>Ubicaciones con mediciones</td><td>50 claves distintas.</td></tr>
+<tr><td>Generación promedio</td><td>80,54 Wh por medición, sobre 1.000.000 de valores no nulos.</td></tr>
+<tr><td>Consumo promedio</td><td>72,75 Wh por medición, sobre 1.000.000 de valores no nulos.</td></tr>
+<tr><td>Nivel de batería promedio</td><td>53,43 %, sobre 1.000.000 de valores no nulos.</td></tr>
+</tbody></table>
+<p class="table-note"><strong>Nota.</strong> Son promedios por medición, no totales. No se infiere un balance energético ni se suman Wh porque no se confirmó que las lecturas sean incrementales, no superpuestas y comparables. Los valores fueron proporcionados por el equipo y requieren conservar evidencia de ejecución y fecha de extracción.</p>
+<p>Los resultados desagregados de las tablas siguientes corresponden a la caché calculada el 13 de noviembre de 2026 a las 05:26:40 UTC, con datos del 1 de enero al 28 de julio de 2026 a las 07:45. La consulta pública reportó 1.000.000 de mediciones; las frecuencias y grupos conjuntos sumaron esa cantidad, con cero tramos y cero grupos omitidos (Equipo del proyecto, 2026a, 2026c). Las gráficas en línea pueden cambiar si se actualiza la caché. No se suministraron capturas del corte para anexar.</p>
+<table><caption>Tabla 3<br><em>Resultados de distribuciones y comparaciones</em></caption><thead><tr><th>Análisis</th><th>Procedimiento y filtro</th><th>Resultado reportado</th></tr></thead><tbody>
+<tr><td>Distribución del consumo</td><td>Frecuencias por intervalos de 10 Wh; límite superior excluido.</td><td>De 30 a menos de 40 Wh: 132.199 lecturas (13,22 % del millón).</td></tr>
+<tr><td>Distribución de generación</td><td>Frecuencias por intervalos de 10 Wh; límite superior excluido.</td><td>De 0 a menos de 10 Wh: 514.909 lecturas (51,49 %).</td></tr>
+<tr><td>Distribución de batería</td><td>Frecuencias por intervalos de 20 puntos porcentuales.</td><td>De 20 % a menos de 40 %: 431.037 lecturas (43,10 %).</td></tr>
+<tr><td>Generación por clima</td><td>Promedio por condición; lecturas no nulas.</td><td>Despejado: 119,38 Wh (n = 261.450); muy nublado o lluvia: 22,63 Wh (n = 32.200).</td></tr>
+<tr><td>Consumo por franja</td><td>Promedio por franja; lecturas no nulas.</td><td>Noche: 93,58 Wh (n = 249.600); madrugada: 38,89 Wh (n = 250.800).</td></tr>
+<tr><td>Consumo por mes</td><td>Promedio mensual; lecturas no nulas.</td><td>Enero: 72,73 Wh (n = 148.800); febrero: 73,04 Wh (n = 134.400); julio parcial: 72,61 Wh (n = 131.200).</td></tr>
+<tr><td>Consumo por mes, clima y franja</td><td>Agrupación conjunta; julio de 2026 y noche.</td><td>Muy nublado o lluvia: 94,58 Wh (n = 2.050); parcialmente nublado: 93,33 Wh (n = 15.400).</td></tr>
+</tbody></table>
+<p class="table-note"><strong>Nota.</strong> Los porcentajes de las distribuciones usan como denominador el millón de registros. Los promedios se expresan en Wh por medición y se ponderan por la cantidad de valores no nulos, no por el número de grupos. No son totales de energía.</p>
+
+<h2>Conocimientos derivados</h2>
+<p>Los cinco conocimientos siguientes se limitan al corte y período indicados en la sección anterior. El sitio contiene visualizaciones relacionadas; no se anexan capturas porque no se suministraron imágenes de las pruebas.</p>
+<h3>Generación concentrada en valores bajos</h3>
+<p>La pregunta es en qué intervalo se concentra la generación. Al agrupar en intervalos de 10 Wh, se reportan 514.909 lecturas entre 0 y menos de 10 Wh (51,49 %). Más de la mitad se ubica en el primer intervalo, lo que describe una alta frecuencia de lecturas bajas. Este hallazgo puede orientar una revisión por momento y condiciones, pero no identifica causas ni representa energía total o viviendas reales. La duración de cada registro en Supabase no está confirmada.</p>
+<h3>Distribución del nivel de batería</h3>
+<p>La pregunta es qué intervalo de batería aparece con mayor frecuencia. Al agrupar en intervalos de 20 puntos porcentuales, se reportan 431.037 lecturas entre 20 % y menos de 40 % (43,10 %). Es el intervalo más frecuente del conjunto. Puede orientar el seguimiento de umbrales, pero las lecturas no equivalen a baterías distintas ni a tiempo acumulado y no prueban un riesgo de descarga.</p>
+<h3>Generación por condición climática</h3>
+<p>La pregunta es cómo difiere la generación promedio entre condiciones. Se reportan 119,38 Wh en clima despejado (n = 261.450) y 22,63 Wh en muy nublado o lluvia (n = 32.200), calculados como promedio de valores no nulos. La diferencia es una asociación descriptiva. Puede orientar el monitoreo en condiciones menos favorables, pero no demuestra causalidad; hora, dispositivos y cobertura pueden influir.</p>
+<h3>Consumo por franja horaria</h3>
+<p>La pregunta es en qué franja se observa mayor consumo promedio por medición. Se reportan 93,58 Wh de noche (n = 249.600) y 38,89 Wh de madrugada (n = 250.800). El promedio nocturno es mayor en el conjunto. Esto puede priorizar la revisión de la carga nocturna y el respaldo de batería, pero no representa energía total ni demuestra la causa de la diferencia; también depende de la definición y cobertura de las franjas.</p>
+<h3>Consumo nocturno de julio por clima</h3>
+<p>La pregunta es cómo varía el consumo nocturno de julio al considerar el clima. Para julio de 2026 y la franja nocturna, se reportan 94,58 Wh en muy nublado o lluvia (n = 2.050) y 93,33 Wh en parcialmente nublado (n = 15.400), una diferencia de 1,25 Wh por medición. El resultado describe una combinación concreta, no todos los meses. Los grupos tienen tamaños distintos, julio está incompleto y no se ha demostrado causalidad ni relevancia práctica de la diferencia.</p>
+
+<h2>Validación</h2>
+<p>El informe previo propone las verificaciones V1–V9 para volumen, claves, nulos, rangos, generación nocturna y eventos, y W1–W6 para conciliación, duplicados, dimensiones y energía. Los campos de resultados de varias verificaciones están vacíos; los resultados esperados no se presentan como obtenidos. Una captura descrita en la documentación presenta cifras que no coinciden con la tabla esperada, por lo que su origen y ejecución requieren conciliación.</p>
+<p>En Supabase se reportaron los conteos de la caché del análisis y ausencia de faltantes y valores negativos en las variables indicadas en la sección de origen de datos. Queda pendiente contrastar duplicados, correspondencia de claves y otros valores atípicos, conservar capturas de las consultas y conciliar los períodos y dispositivos. Las asociaciones descritas no demuestran causalidad. Debido a que el equipo no dispone de fotografías de las pruebas para esta entrega, la validación visual y documental no se puede adjuntar ni comprobar aquí.</p>
+
+<h2>Decisiones sustentadas</h2>
+<table><caption>Tabla 4<br><em>Decisiones propuestas a partir de los resultados descriptivos</em></caption><thead><tr><th>Elemento</th><th>Decisión 1</th><th>Decisión 2</th></tr></thead><tbody>
+<tr><td>Acción propuesta</td><td>Evaluar la gestión de la carga y el respaldo de batería durante la noche.</td><td>Priorizar el monitoreo de generación en condiciones muy nubladas o de lluvia.</td></tr>
+<tr><td>Hallazgo y evidencia reportada</td><td>Consumo promedio nocturno de 93,58 Wh (n = 249.600), frente a 38,89 Wh en la madrugada (n = 250.800); comparación por franja del sitio.</td><td>Generación promedio de 22,63 Wh (n = 32.200), frente a 119,38 Wh en despejado (n = 261.450); comparación por clima del sitio.</td></tr>
+<tr><td>Proceso o grupo</td><td>Consumo y almacenamiento en la franja nocturna del escenario analizado.</td><td>Seguimiento de generación solar por condición climática en el conjunto analizado.</td></tr>
+<tr><td>Indicador de seguimiento</td><td>Comparar promedio de Wh por medición y conteos en períodos equivalentes.</td><td>Seguir el promedio de generación por medición y conteos por condición.</td></tr>
+<tr><td>Limitación</td><td>Duración de las lecturas no confirmada; no demuestra ahorro ni autonomía real.</td><td>Asociación, no causalidad; comparar horas, dispositivos y cobertura antes de aplicar a una instalación real.</td></tr>
+</tbody></table>
+
+<h2>Publicación e integración</h2>
+<p>El sitio del proyecto está publicado en <a href="https://energia-sostenible-datawarehouse.vercel.app/">https://energia-sostenible-datawarehouse.vercel.app/</a>. Se reportó que la página carga y que el selector de mes modifica la tabla del análisis multivariado (Equipo del proyecto, 2026a). El dashboard interactivo de Power BI no está incluido, por lo que el requisito de integración y su prueba de filtros permanecen sin cumplir. No se suministraron capturas de publicación para anexar.</p>
+
+<h2>Conclusiones</h2>
+<p>El análisis de un millón de mediciones del 1 de enero al 28 de julio de 2026 permitió describir patrones de generación, consumo y nivel de batería. La generación se concentró entre 0 y menos de 10 Wh (51,49 % de los registros). El promedio de generación por medición fue mayor en la categoría de clima despejado que en la de muy nublado o lluvia (119,38 Wh y 22,63 Wh, respectivamente). El promedio de consumo por medición también varió por franja: 93,58 Wh durante la noche y 38,89 Wh durante la madrugada.</p>
+<p>Estos resultados describen los registros consultados; no demuestran causalidad, energía total ni el desempeño de una instalación real. Como no se confirmó la duración de cada medición, las comparaciones deben interpretarse como promedios por registro. La documentación del proyecto y la evidencia visual de las pruebas no fueron suministradas para esta entrega, por lo que los resultados se atribuyen al equipo y las pruebas faltantes no se presentan como verificadas.</p>
+<p>Se recomienda conservar la fecha y evidencia de cada extracción; revisar duplicados, correspondencia de claves y granularidad; conciliar los conteos del proceso SSIS con los del esquema de Supabase; documentar las fechas y responsables de las fases; y completar la integración interactiva de Power BI antes de presentar ese requisito como cumplido. Para tomar decisiones operativas se requieren mediciones comparables en períodos equivalentes y una validación adicional del comportamiento del sistema.</p>
+
+<section class="references">
+<h2>Referencias</h2>
+<p>Chapman, P., Clinton, J., Kerber, R., Khabaza, T., Reinartz, T., Shearer, C., &amp; Wirth, R. (2000). <em>CRISP-DM 1.0: Step-by-step data mining guide</em>. The Modeling Agency. <a href="https://www.the-modeling-agency.com/crisp-dm.pdf">https://www.the-modeling-agency.com/crisp-dm.pdf</a></p>
+<p>Equipo del proyecto. (2026a, 13 de noviembre). <em>Energía sostenible</em> [Sitio web del proyecto]. <a href="https://energia-sostenible-datawarehouse.vercel.app/">https://energia-sostenible-datawarehouse.vercel.app/</a></p>
+<p>Equipo del proyecto. (2026b, 13 de noviembre). <em>Consultas de diagnóstico y análisis del conjunto fact_medicion_solar</em> [Scripts SQL no publicados]. <code>DIAGNOSTICO-DATOS.sql</code>, <code>ANALISIS-AGRUPADO.sql</code> y <code>ANALISIS-UNIVARIADO.sql</code>.</p>
+<p>Equipo del proyecto. (2026c, 13 de noviembre). <em>Resultados agregados de mediciones de generación y consumo, del 1 de enero al 28 de julio de 2026</em> [Conjunto de datos consultado en Supabase; resultados proporcionados por el equipo]. Corte de caché: 13 de noviembre de 2026, 05:26:40 UTC.</p>
+</section>
+</main>
+</body>
+</html>
