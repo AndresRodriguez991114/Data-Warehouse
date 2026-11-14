@@ -456,7 +456,7 @@
   }
 
   function renderFeaturedCharts(data) {
-    if (!featuredContainer) return;
+    if (!featuredContainer || !ChartClass) return;
     featuredContainer.replaceChildren();
     
     const section = document.createElement("div");
@@ -467,14 +467,182 @@
     
     const consumoHoras = hourSums(data, "consumo");
     const generacionHoras = hourSums(data, "generacion");
-    const consumoFranja = api.groupAverage(data.grupos, "franja", "consumo");
+    const consumoUbicacion = locationSums(data, "consumo");
     
-    if (consumoHoras.length) {
-      charts.set("featured-consumo-hora", draw(grid, "Consumo total por hora del día", "Wh acumulados a lo largo de todo el período, agregados por hora del día", consumoHoras, "line", "Wh acumulados", "#ca6d39"));
-    }
+    const consumoTotal = Number(data.totales.consumo_suma) || 0;
+    const generacionTotal = Number(data.totales.generacion_suma) || 0;
+    const ahorroPercent = generacionTotal > 0 ? ((generacionTotal - consumoTotal) / generacionTotal * 100) : 0;
     
-    if (consumoFranja.length) {
-      charts.set("featured-consumo-franja", draw(grid, "Consumo promedio por franja horaria", "Promedio ponderado de Wh por medición, agrupado por franja", consumoFranja, "bar", "Wh por medición", "#5479b7"));
+    if (!consumoHoras.length || !generacionHoras.length) return;
+    
+    const figure = document.createElement("figure");
+    figure.className = "exploration-chart";
+    figure.style.setProperty("--chart-accent", "#5479b7");
+    
+    const caption = document.createElement("figcaption");
+    caption.append(text("h3", "Energía por hora del día"), text("p", "Generación y consumo total acumulados por hora"));
+    
+    const wrapper = document.createElement("div");
+    wrapper.className = "chart-canvas";
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("role", "img");
+    canvas.setAttribute("aria-label", "Energía por hora del día");
+    wrapper.append(canvas);
+    
+    const metricsBox = document.createElement("div");
+    metricsBox.className = "featured-metrics";
+    metricsBox.innerHTML = `
+      <div class="metric-item">
+        <span class="metric-label">Generación Total</span>
+        <strong class="metric-value">${number.format(generacionTotal)}</strong>
+        <span class="metric-unit">Wh</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Consumo Total</span>
+        <strong class="metric-value">${number.format(consumoTotal)}</strong>
+        <span class="metric-unit">Wh</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Ahorro</span>
+        <strong class="metric-value">${number.format(ahorroPercent)}</strong>
+        <span class="metric-unit">%</span>
+      </div>
+    `;
+    
+    figure.append(caption, metricsBox, wrapper);
+    grid.append(figure);
+    
+    const colorIndex = 1;
+    const colors = [palette[0], palette[1]];
+    
+    const chart = new ChartClass(canvas, {
+      type: "line",
+      data: {
+        labels: generacionHoras.map(row => row.label),
+        datasets: [
+          {
+            label: "Generación Total",
+            data: generacionHoras.map(row => row.value),
+            borderColor: colors[0],
+            backgroundColor: colors[0] + "15",
+            borderWidth: 3,
+            pointRadius: 4,
+            pointBackgroundColor: colors[0],
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointHoverRadius: 7,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: "Consumo Total",
+            data: consumoHoras.map(row => row.value),
+            borderColor: colors[1],
+            backgroundColor: colors[1] + "15",
+            borderWidth: 3,
+            pointRadius: 4,
+            pointBackgroundColor: colors[1],
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointHoverRadius: 7,
+            tension: 0.4,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        animation: reducedMotion.matches ? false : { duration: 900, easing: "easeOutQuart" },
+        plugins: {
+          legend: { 
+            display: true,
+            position: "top",
+            labels: { font: { size: 12 }, usePointStyle: true, padding: 15 }
+          },
+          tooltip: { 
+            backgroundColor: "rgba(0,0,0,0.8)",
+            padding: 12,
+            titleFont: { size: 12, weight: "bold" },
+            bodyFont: { size: 11 },
+            callbacks: { 
+              afterLabel: context => {
+                const hour = generacionHoras[context.dataIndex] || consumoHoras[context.dataIndex];
+                return `Mediciones: ${whole.format(hour.count)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: { 
+            beginAtZero: true,
+            title: { display: true, text: "Wh acumulados" },
+            grid: { color: "rgba(0,0,0,0.05)" }
+          },
+          x: { ticks: { maxRotation: 0, minRotation: 0 } }
+        }
+      }
+    });
+    
+    charts.set("featured-combined", { destroy: () => { chart.destroy(); } });
+    
+    if (consumoUbicacion.length > 0) {
+      const barFigure = document.createElement("figure");
+      barFigure.className = "exploration-chart";
+      barFigure.style.setProperty("--chart-accent", "#ca6d39");
+      
+      const barCaption = document.createElement("figcaption");
+      barCaption.append(text("h3", "Consumo total por ubicación"), text("p", "Suma acumulada por categoría o barrio"));
+      
+      const barWrapper = document.createElement("div");
+      barWrapper.className = "chart-canvas";
+      const barCanvas = document.createElement("canvas");
+      barCanvas.setAttribute("role", "img");
+      barCanvas.setAttribute("aria-label", "Consumo por ubicación");
+      barWrapper.append(barCanvas);
+      
+      barFigure.append(barCaption, barWrapper);
+      grid.append(barFigure);
+      
+      const barColors = consumoUbicacion.map((_, idx) => palette[(idx) % palette.length]);
+      
+      const barChart = new ChartClass(barCanvas, {
+        type: "bar",
+        data: {
+          labels: consumoUbicacion.map(row => row.label),
+          datasets: [{
+            label: "Wh acumulados",
+            data: consumoUbicacion.map(row => row.value),
+            backgroundColor: barColors,
+            borderColor: barColors,
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: reducedMotion.matches ? false : { duration: 900, easing: "easeOutQuart" },
+          plugins: {
+            legend: { display: false },
+            tooltip: { 
+              callbacks: { 
+                afterLabel: context => {
+                  const row = consumoUbicacion[context.dataIndex];
+                  return `Mediciones: ${whole.format(row.count)}`;
+                }
+              } 
+            }
+          },
+          scales: {
+            x: { beginAtZero: true, title: { display: true, text: "Wh acumulados" } }
+          }
+        }
+      });
+      
+      charts.set("featured-ubicacion", { destroy: () => { barChart.destroy(); } });
     }
     
     section.append(grid);
@@ -483,14 +651,18 @@
 
   function render(data) {
     currentData = data;
-    renderFeaturedCharts(data);
     renderMetrics(data.totales);
     content.hidden = false;
-    charts.forEach(chart => chart.destroy());
+    charts.forEach(chart => {
+      if (chart && chart.destroy) chart.destroy();
+    });
     charts.clear();
-    if (combinedChart) combinedChart.destroy();
+    if (combinedChart && combinedChart.destroy) combinedChart.destroy();
     combinedChart = null;
     chartsContainer.replaceChildren();
+    if (featuredContainer && ChartClass) {
+      renderFeaturedCharts(data);
+    }
 
     Object.entries(chartClassification).forEach(([categoryKey, categoryData]) => {
       renderCategory(categoryKey, categoryData, chartsContainer, data);
