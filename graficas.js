@@ -7,6 +7,7 @@
   const chartsContainer = document.getElementById("exploration-charts");
   const knowledgeList = document.getElementById("knowledge-list");
   const decisionList = document.getElementById("decision-list");
+  const featuredContainer = document.getElementById("featured-charts-container");
   if (!status || !content || !monthSelect || !chartsContainer) return;
   if (!api) {
     status.textContent = "No se pudo inicializar el análisis de gráficas.";
@@ -454,8 +455,35 @@
     renderDecisions(decisions);
   }
 
+  function renderFeaturedCharts(data) {
+    if (!featuredContainer) return;
+    featuredContainer.replaceChildren();
+    
+    const section = document.createElement("div");
+    section.className = "featured-charts-section";
+    
+    const grid = document.createElement("div");
+    grid.className = "featured-charts-grid";
+    
+    const consumoHoras = hourSums(data, "consumo");
+    const generacionHoras = hourSums(data, "generacion");
+    const consumoFranja = api.groupAverage(data.grupos, "franja", "consumo");
+    
+    if (consumoHoras.length) {
+      charts.set("featured-consumo-hora", draw(grid, "Consumo total por hora del día", "Wh acumulados a lo largo de todo el período, agregados por hora del día", consumoHoras, "line", "Wh acumulados", "#ca6d39"));
+    }
+    
+    if (consumoFranja.length) {
+      charts.set("featured-consumo-franja", draw(grid, "Consumo promedio por franja horaria", "Promedio ponderado de Wh por medición, agrupado por franja", consumoFranja, "bar", "Wh por medición", "#5479b7"));
+    }
+    
+    section.append(grid);
+    featuredContainer.append(section);
+  }
+
   function render(data) {
     currentData = data;
+    renderFeaturedCharts(data);
     renderMetrics(data.totales);
     content.hidden = false;
     charts.forEach(chart => chart.destroy());
@@ -530,7 +558,7 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refresh();
   });
-  status.textContent = "Conectando con Supabase…";
+  status.textContent = "Conectando con la base de datos…";
   refresh();
   window.setInterval(refresh, POLL_INTERVAL_MS);
 })();

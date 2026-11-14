@@ -90,7 +90,7 @@
   }
 
   async function start() {
-    status.textContent = "Conectando con Supabase…";
+    status.textContent = "Conectando con la base de datos…";
     try {
       const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.91.0/+esm");
       client = createClient(config.supabaseUrl, config.supabasePublishableKey);
