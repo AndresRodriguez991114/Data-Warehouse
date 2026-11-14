@@ -17,11 +17,11 @@
   try {
     url = new URL(config.supabaseUrl);
   } catch (error) {
-    status.textContent = "La URL de Base de datosno es válida.";
+    status.textContent = "La URL de Base de datos no es válida.";
     return;
   }
   if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co")) {
-    status.textContent = "La URL debe corresponder a un proyecto de Base de datoscon HTTPS.";
+    status.textContent = "La URL debe corresponder a un proyecto de Base de datos con HTTPS.";
     return;
   }
   if (!isPublicKey(config.supabasePublishableKey)) {
