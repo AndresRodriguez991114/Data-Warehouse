@@ -57,8 +57,94 @@
       </section>
 
       <section class="section" id="datos">
-        <div class="section-heading"><div><span class="section-number">03 / INFORMACIÓN</span><h2>Gestión de los datos</h2></div><p></p></div>
-        <div class="data-grid"><article><span>01</span><h3>Fuente consultada</h3><p>La página obtiene métricas y visualizaciones desde funciones de lectura de Base de datosque devuelven únicamente datos agregados.</p></article><article><span>02</span><h3>Período y volumen</h3><p>El intervalo y el total de mediciones se muestran a partir de la caché calculada en la base, no de cifras fijas en el sitio.</p></article><article><span>03</span><h3>Comparativos</h3><p>Las gráficas agrupan por mes, clima, franja, hora y categoría de ubicación; los grupos menores de 10 mediciones se omiten.</p></article><article><span>04</span><h3>Actualización</h3><p>Base de datosCron actualiza la caché cada 5 minutos y el navegador vuelve a consultarla con la misma frecuencia mientras la página está abierta.</p></article></div>
+        <div class="section-heading"><div><span class="section-number">03 / INFORMACIÓN</span><h2>Gestión de los datos</h2></div></div>
+        
+        <p>Las mediciones de energía de Cajicá se guardan en SQL Server, se limpian y se cargan con un ETL en SSIS a un Data Warehouse en esquema estrella. De ahí salen los indicadores del dashboard y del análisis.</p>
+        
+        <h3>01 · Fuente consultada</h3>
+        <ul>
+          <li><strong>Lecturas reales:</strong> un prototipo con ESP32-S3, panel solar, batería de litio y sensores de corriente y voltaje envía sus datos por MQTT a Node-RED, que los guarda en <code>Telemetria_Real</code> (3.255 registros).</li>
+          <li><strong>Mediciones simuladas:</strong> completan el volumen hasta 1.003.209 registros en la tabla <code>Medicion</code>, que cubre 354 ubicaciones (viviendas y un espacio público).</li>
+          <li><strong>Modelo relacional:</strong> Barrio, Casa, Lugar_Publico, Dispositivo, Medicion, Telemetria_Real, Alerta y Rechazados_ETL.</li>
+          <li><strong>Data Warehouse</strong> <code>CiudadInteligente_Cajica_DW</code>: tabla de hechos <code>Fact_Mediciones</code> y tres dimensiones (<code>Dim_Tiempo</code>, <code>Dim_Dispositivo</code>, <code>Dim_Ubicacion</code>).</li>
+        </ul>
+        <p><em>Nota de transparencia: los datos son en su mayoría simulados. Los resultados describen los registros consultados.</em></p>
+
+        <h3>02 · Período y volumen</h3>
+        <table class="data-table">
+          <tr>
+            <td><strong>Indicador</strong></td>
+            <td><strong>Valor</strong></td>
+          </tr>
+          <tr>
+            <td>Inicio del período</td>
+            <td>13 de octubre de 2026</td>
+          </tr>
+          <tr>
+            <td>Duración</td>
+            <td>≈ 30 días (720 horas en <code>Dim_Tiempo</code>)</td>
+          </tr>
+          <tr>
+            <td>Mediciones totales</td>
+            <td>1.003.209</td>
+          </tr>
+          <tr>
+            <td>Mediciones por día</td>
+            <td>entre 33.000 y 33.800</td>
+          </tr>
+          <tr>
+            <td>Ubicaciones y dispositivos</td>
+            <td>354</td>
+          </tr>
+          <tr>
+            <td>Lecturas reales del prototipo</td>
+            <td>3.255</td>
+          </tr>
+          <tr>
+            <td>Filas agregadas en el DW</td>
+            <td>249.956</td>
+          </tr>
+        </table>
+        <p>Cada fila del DW resume unas 4 mediciones por hora (1.003.209 / 249.956 ≈ 4,01).</p>
+
+        <h3>03 · Comparativos</h3>
+        <p>Conteos en cada etapa del flujo, para comprobar que no se pierde información:</p>
+        <table class="data-table">
+          <tr>
+            <td><strong>Etapa</strong></td>
+            <td><strong>Total</strong></td>
+          </tr>
+          <tr>
+            <td>1. Telemetria_Real (crudo ESP32)</td>
+            <td>3.255</td>
+          </tr>
+          <tr>
+            <td>2. Extraídos de Medicion</td>
+            <td>1.003.209</td>
+          </tr>
+          <tr>
+            <td>3. Cargados en Fact_Mediciones</td>
+            <td>249.956</td>
+          </tr>
+          <tr>
+            <td>4. Rechazados</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>5. Alertas generadas</td>
+            <td>19</td>
+          </tr>
+        </table>
+        <p>Además, <code>Dim_Dispositivo</code> y <code>Dim_Ubicacion</code> tienen 354 filas cada una, igual que el número de ubicaciones. Los conteos se verificaron con consultas en SQL Server Management Studio.</p>
+
+        <h3>04 · Actualización</h3>
+        <ul>
+          <li><strong>Carga incremental:</strong> el ETL aplica una marca de agua y solo procesa fechas posteriores a la última carga.</li>
+          <li><strong>Sin duplicados:</strong> al ejecutar el paquete SSIS dos veces sin borrar el DW, los conteos no cambiaron, porque la llave primaria compuesta y la marca de agua lo impiden.</li>
+          <li><strong>Calidad:</strong> los registros inválidos van a <code>Rechazados_ETL</code> con su motivo (en esta carga fueron 0).</li>
+          <li><strong>Alertas:</strong> la tabla <code>Alerta</code> guarda dispositivo, fecha y hora, mensaje, total de registros y si se envió correo (19 generadas). El envío automático de correos falló por falta de permiso EXECUTE sobre <code>sp_send_dbmail</code>, y es una mejora pendiente.</li>
+          <li><strong>Tiempo real:</strong> las lecturas del prototipo llegan por MQTT a Node-RED, que las guarda en <code>Telemetria_Real</code> a medida que se generan.</li>
+        </ul>
       </section>
 
       <section class="section dashboard-section" id="dashboard">

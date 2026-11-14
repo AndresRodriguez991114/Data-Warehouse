@@ -50,3 +50,13 @@
 .exploration-chart:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(34,55,43,.12)}
 .exploration-chart figcaption{min-height:84px}
 @media(prefers-reduced-motion:reduce){.exploration-chart{transition:none}.exploration-chart:hover{transform:none}}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.data-table tr{border-bottom:1px solid var(--line)}
+.data-table td{padding:12px 16px;text-align:left}
+.data-table tr:nth-child(odd){background:#fafbfa}
+.data-table strong{color:var(--ink);font-weight:700}
+.data-table code{background:#f0f2f1;padding:2px 6px;border-radius:3px;font-family:monospace;color:#4a5a52}
+section#datos ul{padding-left:20px;color:#53665e}
+section#datos li{margin-bottom:8px;line-height:1.7}
+section#datos code{background:#f0f2f1;padding:2px 6px;border-radius:3px;font-family:monospace;color:#4a5a52;font-size:12px}
+section#datos strong{color:var(--ink);font-weight:700}
