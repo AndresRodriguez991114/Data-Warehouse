@@ -102,6 +102,7 @@ section#datos strong{color:var(--ink);font-weight:700}/* Gráficas: tarjetas sob
 .coverage__track{height:8px;border-radius:999px;overflow:hidden}
 .coverage__fill{height:100%;border-radius:999px}
 .coverage__value{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.coverage__note{margin:4px 0 0;font-size:12px;line-height:1.45;color:var(--muted)}
 
 /* Maqueta 3D del módulo de energía renovable */
 .maqueta-figure{margin:28px 0 32px;border:1px solid var(--line);background:#fff;padding:18px}

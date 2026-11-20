@@ -70,7 +70,7 @@
   const cacheSchemaError = "La base de datos está devolviendo una caché con el formato anterior. En SQL Editor ejecuta sql/supabase/SUPABASE-GRAFICAS.sql y luego SELECT public.pgc_actualizar_graficas_energia_2026();";
 
   function validateCache(data) {
-    if (!data || data.estado !== "ok" || !Array.isArray(data.grupos) || !Array.isArray(data.horas) || !Array.isArray(data.ubicaciones) || !Array.isArray(data.recurso) || !data.totales || !data.periodo_comun) {
+    if (!data || data.estado !== "ok" || !Array.isArray(data.grupos) || !Array.isArray(data.horas) || !Array.isArray(data.ubicaciones) || !Array.isArray(data.recurso) || !data.totales || !data.periodo_comun || !("consumo_cubierto_suma" in data.periodo_comun)) {
       throw new Error(cacheSchemaError);
     }
   }
@@ -111,7 +111,11 @@
         mediciones: sum("mediciones"),
         generacion_suma: sum("generacion_suma"),
         eolica_suma: sum("eolica_suma"),
-        consumo_suma: sum("consumo_suma")
+        consumo_suma: sum("consumo_suma"),
+        consumo_cubierto_suma: sum("consumo_cubierto_suma"),
+        consumo_cubierto_solar_suma: sum("consumo_cubierto_solar_suma"),
+        excedente_suma: sum("excedente_suma"),
+        generacion_sin_consumo_suma: sum("generacion_sin_consumo_suma")
       }
     };
   }
@@ -175,6 +179,15 @@
     if (!common.inicio || !common.fin || !Number.isSafeInteger(count) || count <= 0) return null;
     if (!Number.isFinite(solar) || !Number.isFinite(wind)) throw new Error("Las sumas del período común no son válidas.");
     const generated = solar + wind;
+    const amount = field => {
+      const value = Number(common[field]);
+      return Number.isFinite(value) ? value : 0;
+    };
+    // Lo cubierto ya viene limitado al consumo de cada medición (MIN(generación, consumo)),
+    // de modo que la cobertura queda entre 0 % y 100 %.
+    const covered = amount("consumo_cubierto_suma");
+    const coveredSolar = amount("consumo_cubierto_solar_suma");
+    const hasConsumption = Number.isFinite(consumed) && consumed > 0;
     return {
       start: common.inicio,
       end: common.fin,
@@ -182,9 +195,12 @@
       solar,
       wind,
       consumed: Number.isFinite(consumed) ? consumed : null,
-      coverage: Number.isFinite(consumed) && consumed > 0 ? generated / consumed * 100 : null,
-      solarCoverage: Number.isFinite(consumed) && consumed > 0 ? solar / consumed * 100 : null,
-      windCoverage: Number.isFinite(consumed) && consumed > 0 ? wind / consumed * 100 : null,
+      covered,
+      uncovered: hasConsumption ? Math.max(consumed - covered, 0) : null,
+      surplus: amount("excedente_suma"),
+      unmatched: amount("generacion_sin_consumo_suma"),
+      coverage: hasConsumption ? Math.min(covered / consumed * 100, 100) : null,
+      solarCoverage: hasConsumption ? Math.min(coveredSolar / consumed * 100, 100) : null,
       solarShare: generated > 0 ? solar / generated * 100 : null,
       windShare: generated > 0 ? wind / generated * 100 : null
     };
@@ -507,11 +523,12 @@
       item.append(swatch, text("strong", part.label), text("span", `${number.format(part.value)} Wh${part.share === null ? "" : ` · ${number.format(part.share)} %`}`));
       legend.append(item);
     });
-    // Qué parte del consumo cubre cada fuente: medidor con riel del mismo tono.
+    // Qué parte del consumo se cubre en el mismo momento: medidor con riel del mismo tono.
     const coverage = document.createElement("div");
     coverage.className = "coverage";
-    coverage.append(text("p", "Cobertura del consumo en el mismo período", "coverage__title"));
-    [["Solar", shared.solarCoverage, COLORS.solar], ["Eólica", shared.windCoverage, COLORS.eolica], ["Solar + eólica", shared.coverage, INK]].forEach(([label, value, color]) => {
+    coverage.append(text("p", "Consumo cubierto en el mismo momento", "coverage__title"));
+    const uncoveredShare = shared.coverage === null ? null : 100 - shared.coverage;
+    [["Solar", shared.solarCoverage, COLORS.solar], ["Solar + eólica", shared.coverage, INK], ["Sin cubrir (batería o red)", uncoveredShare, COLORS.consumo]].forEach(([label, value, color]) => {
       const row = document.createElement("div");
       row.className = "coverage__row";
       const track = document.createElement("div");
@@ -525,6 +542,9 @@
       row.append(text("span", label, "coverage__label"), track, text("span", Number.isFinite(value) ? `${number.format(value)} %` : "Sin datos", "coverage__value"));
       coverage.append(row);
     });
+    const notes = [`Excedente: ${number.format(shared.surplus)} Wh generados de más en el momento (para la batería o la red).`];
+    if (shared.unmatched > 0) notes.push(`${number.format(shared.unmatched)} Wh vienen de dispositivos sin medición de consumo y no entran en la cobertura.`);
+    coverage.append(text("p", notes.join(" "), "coverage__note"));
     const rows = parts.map(part => ({ label: part.label, value: part.value, count: null, percent: part.share }));
     const series = [{ label: "Generación", color: COLORS.solar, rows }];
     figure.append(bar, legend, coverage, buildTable(rows.map(row => row.label), series, [new Map(rows.map(row => [row.label, row]))], "Wh generados"));
@@ -740,14 +760,15 @@
     const percent = value => value === null ? "sin consumo válido" : `${number.format(value)} %`;
 
     const knowledge = [{
-      title: "Cobertura de las dos fuentes",
+      title: "Cobertura del consumo",
       fields: [
-        ["Pregunta", "¿Qué parte del consumo cubren juntas la energía solar y la eólica?"],
+        ["Pregunta", "¿Qué parte del consumo se cubre con generación propia en el mismo momento en que se consume?"],
         ["Datos solares", `${date(totals.solar_inicio)} a ${date(totals.solar_fin)} · ${whole.format(Number(totals.generacion_no_nula))} mediciones`],
         ["Datos eólicos", `${date(totals.eolica_inicio)} a ${date(totals.eolica_fin)} · ${whole.format(Number(totals.eolica_no_nula))} mediciones`],
         ["Período común", shared ? `${date(shared.start)} a ${date(shared.end)} · ${whole.format(shared.count)} mediciones` : "Las dos fuentes no tienen fechas en común."],
-        ["Hallazgo", shared ? `En el período común, la generación renovable cubre el ${percent(shared.coverage)} del consumo: ${percent(shared.solarCoverage)} la solar y ${percent(shared.windCoverage)} la eólica.` : "No se puede comparar la cobertura sin un período común."],
-        ["Limitación", "Los totales dependen de cuántas instalaciones de cada tipo hay en los datos; para comparar el rendimiento de una instalación se usan los promedios por medición."]
+        ["Hallazgo", shared ? `En el período común, la generación cubre directamente el ${percent(shared.coverage)} del consumo (la solar, el ${percent(shared.solarCoverage)}). ${shared.uncovered === null ? "" : `Quedan ${number.format(shared.uncovered)} Wh sin cubrir en el momento y sobran ${number.format(shared.surplus)} Wh de excedente.`}`.trim() : "No se puede comparar la cobertura sin un período común."],
+        ["Procedimiento", "En cada medición con consumo, la generación solo cuenta hasta lo consumido: MIN(generación, consumo). Lo que sobra es excedente, por lo que la cobertura nunca supera el 100 %."],
+        ["Limitación", `${shared && shared.unmatched > 0 ? `${number.format(shared.unmatched)} Wh provienen de dispositivos sin medición de consumo (la eólica) y no entran en la cobertura. ` : ""}Los totales dependen de cuántas instalaciones de cada tipo hay en los datos.`]
       ]
     }];
 
@@ -791,8 +812,8 @@
     const decisions = [{
       title: "Revisar el balance renovable",
       fields: [
-        ["Acción propuesta", "Usar la cobertura conjunta como señal para revisar la demanda, el almacenamiento y la proporción entre instalaciones solares y eólicas."],
-        ["Respaldo", shared ? `${number.format(shared.solar)} Wh solares y ${number.format(shared.wind)} Wh eólicos frente a ${shared.consumed === null ? "un consumo sin datos" : `${number.format(shared.consumed)} Wh consumidos`}; cobertura ${percent(shared.coverage)}.` : "Sin período común para comparar."],
+        ["Acción propuesta", "Usar el consumo sin cubrir y el excedente como señal para dimensionar el almacenamiento: guardar lo que sobra al mediodía para las horas sin sol."],
+        ["Respaldo", shared ? `${shared.consumed === null ? "Consumo sin datos" : `${number.format(shared.consumed)} Wh consumidos`}: ${number.format(shared.covered)} Wh cubiertos en el momento (${percent(shared.coverage)}), ${shared.uncovered === null ? "sin datos" : `${number.format(shared.uncovered)} Wh`} sin cubrir y ${number.format(shared.surplus)} Wh de excedente.` : "Sin período común para comparar."],
         ["Seguimiento", "Recalcular la cobertura cuando ambas fuentes tengan datos del mismo período."],
         ["Limitación", "El balance agregado no dimensiona equipos ni identifica la causa de la diferencia."]
       ]
@@ -861,7 +882,7 @@
     const metricsBox = document.createElement("div");
     metricsBox.className = "featured-metrics";
     [
-      ["Cobertura renovable", shared && shared.coverage !== null ? `${number.format(shared.coverage)} %` : "Sin datos", "del consumo, solar + eólica", "metric-item metric-item--hero"],
+      ["Consumo cubierto", shared && shared.coverage !== null ? `${number.format(shared.coverage)} %` : "Sin datos", "del consumo, con generación propia en el mismo momento", "metric-item metric-item--hero"],
       ["Generación solar", solarValue, `${solarUnit} ${data.scope}`.trim(), "metric-item", COLORS.solar],
       ["Generación eólica", windValue, `${windUnit} ${data.scope}`.trim(), "metric-item", COLORS.eolica]
     ].forEach(([label, value, unit, className, color]) => {

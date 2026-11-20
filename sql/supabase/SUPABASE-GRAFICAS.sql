@@ -66,7 +66,16 @@ AS $$
                COUNT(medicion.energia_generada_wh) AS generacion_no_nula,
                SUM(medicion.energia_generada_wh::numeric) AS generacion_suma,
                COUNT(medicion.energia_eolica_wh) AS eolica_no_nula,
-               SUM(medicion.energia_eolica_wh::numeric) AS eolica_suma
+               SUM(medicion.energia_eolica_wh::numeric) AS eolica_suma,
+               -- Balance por medición (ver la explicación en «comun»).
+               SUM(GREATEST(LEAST(COALESCE(medicion.energia_generada_wh::numeric, 0) + COALESCE(medicion.energia_eolica_wh::numeric, 0), medicion.energia_consumida_total_wh::numeric), 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NOT NULL) AS consumo_cubierto_suma,
+               SUM(GREATEST(LEAST(COALESCE(medicion.energia_generada_wh::numeric, 0), medicion.energia_consumida_total_wh::numeric), 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NOT NULL) AS consumo_cubierto_solar_suma,
+               SUM(GREATEST(COALESCE(medicion.energia_generada_wh::numeric, 0) + COALESCE(medicion.energia_eolica_wh::numeric, 0) - medicion.energia_consumida_total_wh::numeric, 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NOT NULL) AS excedente_suma,
+               COALESCE(SUM(COALESCE(medicion.energia_generada_wh::numeric, 0) + COALESCE(medicion.energia_eolica_wh::numeric, 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NULL), 0) AS generacion_sin_consumo_suma
         FROM public.fact_medicion_energia AS medicion
         LEFT JOIN clima ON clima.condicion_key = medicion.condicion_key
         LEFT JOIN hora ON hora.franja_key = medicion.franja_key
@@ -157,7 +166,19 @@ AS $$
                COUNT(medicion.fecha_hora) AS mediciones,
                COALESCE(SUM(medicion.energia_generada_wh::numeric), 0) AS generacion_suma,
                COALESCE(SUM(medicion.energia_eolica_wh::numeric), 0) AS eolica_suma,
-               SUM(medicion.energia_consumida_total_wh::numeric) AS consumo_suma
+               SUM(medicion.energia_consumida_total_wh::numeric) AS consumo_suma,
+               -- Cobertura en el mismo momento: en cada medición con consumo, la generación propia
+               -- solo cubre hasta lo consumido (MIN(generación, consumo)); el resto es excedente.
+               -- Así la cobertura nunca pasa del 100 % y el excedente del mediodía no tapa la noche.
+               SUM(GREATEST(LEAST(COALESCE(medicion.energia_generada_wh::numeric, 0) + COALESCE(medicion.energia_eolica_wh::numeric, 0), medicion.energia_consumida_total_wh::numeric), 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NOT NULL) AS consumo_cubierto_suma,
+               SUM(GREATEST(LEAST(COALESCE(medicion.energia_generada_wh::numeric, 0), medicion.energia_consumida_total_wh::numeric), 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NOT NULL) AS consumo_cubierto_solar_suma,
+               SUM(GREATEST(COALESCE(medicion.energia_generada_wh::numeric, 0) + COALESCE(medicion.energia_eolica_wh::numeric, 0) - medicion.energia_consumida_total_wh::numeric, 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NOT NULL) AS excedente_suma,
+               -- Generación de dispositivos que no miden consumo (p. ej. la eólica): no entra en la cobertura.
+               COALESCE(SUM(COALESCE(medicion.energia_generada_wh::numeric, 0) + COALESCE(medicion.energia_eolica_wh::numeric, 0))
+                   FILTER (WHERE medicion.energia_consumida_total_wh IS NULL), 0) AS generacion_sin_consumo_suma
         FROM ventana
         LEFT JOIN public.fact_medicion_energia AS medicion
                ON medicion.fecha_hora BETWEEN ventana.inicio AND ventana.fin
@@ -165,7 +186,7 @@ AS $$
     )
     SELECT true, jsonb_build_object(
         'estado', 'ok',
-        'version', 3,
+        'version', 4,
         'calculado_en', statement_timestamp(),
         'totales', (SELECT to_jsonb(totales) FROM totales),
         'periodo_comun', (SELECT to_jsonb(comun) FROM comun),

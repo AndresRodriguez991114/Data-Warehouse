@@ -38,9 +38,9 @@ test("consulta SQL agrega energía solar y eólica, calcula el período común y
       FROM generate_series(1, 50) AS value;
       INSERT INTO public.fact_medicion_energia (fecha_hora, condicion_key, franja_key, ubicacion_key, dispositivo_key, energia_consumida_total_wh, energia_generada_wh, nivel_bateria_pct, irradiancia_wm2)
       VALUES ('2026-01-02', 2, 1, 1, 1, 15, 25, 50, 450);
-      -- 20 mediciones eólicas entre 00:31 y 00:50, de otro dispositivo.
+      -- 20 mediciones eólicas entre 00:31 y 00:50, de otro dispositivo que no mide consumo.
       INSERT INTO public.fact_medicion_energia (fecha_hora, condicion_key, franja_key, ubicacion_key, dispositivo_key, energia_consumida_total_wh, velocidad_viento_ms, direccion_viento_grados, potencia_eolica_w, energia_eolica_wh)
-      SELECT '2026-01-01'::timestamp + value * interval '1 minute', 1, 1, 1, 2, 10, 6.5, 90, 48, 12
+      SELECT '2026-01-01'::timestamp + value * interval '1 minute', 1, 1, 1, 2, NULL, 6.5, 90, 48, 12
       FROM generate_series(31, 50) AS value;
     `);
     await db.exec(script());
@@ -48,7 +48,7 @@ test("consulta SQL agrega energía solar y eólica, calcula el período común y
     await db.exec("SET ROLE anon;");
     const data = (await db.query("SELECT public.pgc_graficas_publicas_2026() AS data;")).rows[0].data;
     assert.equal(data.estado, "ok");
-    assert.equal(data.version, 3);
+    assert.equal(data.version, 4);
     assert.equal(data.mediciones_total, 71);
     assert.equal(data.totales.generacion_suma, 1275);
     assert.equal(data.totales.eolica_suma, 240);
@@ -60,10 +60,17 @@ test("consulta SQL agrega energía solar y eólica, calcula el período común y
     assert.equal(data.periodo_comun.mediciones, 40);
     assert.equal(data.periodo_comun.generacion_suma, 500);
     assert.equal(data.periodo_comun.eolica_suma, 240);
-    assert.equal(data.periodo_comun.consumo_suma, 500);
+    assert.equal(data.periodo_comun.consumo_suma, 300);
+    // Cada medición solar cubre sus 15 Wh y sobran 10; la eólica no tiene consumo asociado.
+    assert.equal(data.periodo_comun.consumo_cubierto_suma, 300);
+    assert.equal(data.periodo_comun.consumo_cubierto_solar_suma, 300);
+    assert.equal(data.periodo_comun.excedente_suma, 200);
+    assert.equal(data.periodo_comun.generacion_sin_consumo_suma, 240);
     assert.equal(data.grupos.length, 1);
     assert.equal(data.grupos[0].mediciones, 70);
     assert.equal(data.grupos[0].eolica_no_nula, 20);
+    assert.equal(data.grupos[0].consumo_cubierto_suma, 750);
+    assert.equal(data.grupos[0].generacion_sin_consumo_suma, 240);
     assert.equal(data.mediciones_omitidas, 1);
     assert.equal(data.horas[0].eolica_suma, 240);
     // Todos los agregados llevan su mes para filtrar el dashboard.

@@ -42,7 +42,7 @@ const graphData = {
     eolica_inicio: "2026-01-15T00:00:00",
     eolica_fin: "2026-02-28T23:00:00"
   },
-  periodo_comun: { inicio: "2026-01-15T00:00:00", fin: "2026-01-31T23:00:00", mediciones: 40, generacion_suma: 300, eolica_suma: 150, consumo_suma: 600 },
+  periodo_comun: { inicio: "2026-01-15T00:00:00", fin: "2026-01-31T23:00:00", mediciones: 40, generacion_suma: 300, eolica_suma: 150, consumo_suma: 600, consumo_cubierto_suma: 360, consumo_cubierto_solar_suma: 300, excedente_suma: 90, generacion_sin_consumo_suma: 150 },
   grupos: [
     { mes: "2026-01-01", condicion: "Soleado", franja: "Día", mediciones: 30, consumo_no_nulo: 30, consumo_suma: 300, generacion_no_nula: 30, generacion_suma: 360, eolica_no_nula: 10, eolica_suma: 50 },
     { mes: "2026-01-01", condicion: "Nublado", franja: "Noche", mediciones: 21, consumo_no_nulo: 21, consumo_suma: 465, generacion_no_nula: 21, generacion_suma: 150, eolica_no_nula: 10, eolica_suma: 190 },
@@ -101,9 +101,11 @@ test("la página presenta gráficas y decisiones desde Base de datos y sondea ca
     assert.match(await page.locator("#exploration-status").innerText(), /cada 5 minutos/);
     assert.match(await page.locator("#exploration-period").innerText(), /eólica: 2026-01-15 a 2026-02-28/);
     assert.match(await page.locator("#grafica-consumo-ubicacion").innerText(), /Consumo promedio por estrato/);
-    assert.match(await page.locator("#featured-charts-container").innerText(), /Cobertura renovable[\s\S]*75/i);
-    // Cobertura del período común: (300 + 150) / 600.
-    assert.match(await page.locator("#decision-list").innerText(), /75 %/);
+    assert.match(await page.locator("#featured-charts-container").innerText(), /Consumo cubierto[\s\S]*60 %/i);
+    // Cobertura del período común: 360 Wh cubiertos en el momento / 600 Wh consumidos; nunca supera el 100 %.
+    assert.match(await page.locator("#decision-list").innerText(), /60 %/);
+    assert.match(await page.locator("#grafica-mezcla .coverage").innerText(), /Solar[\s\S]*50 %[\s\S]*Sin cubrir[\s\S]*40 %/);
+    assert.match(await page.locator("#grafica-mezcla .coverage__note").innerText(), /150 Wh vienen de dispositivos sin medición de consumo/);
     // A las 00:00 la eólica (10 Wh) supera a la solar (0 Wh).
     assert.match(await page.locator("#knowledge-list").textContent(), /supera a la solar en 1 de 24 horas: 00:00/);
     assert.match(await page.locator("#grafico-mes").innerText(), /enero de 2026[\s\S]*febrero de 2026/);
