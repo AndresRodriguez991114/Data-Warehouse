@@ -17,11 +17,11 @@
   try {
     url = new URL(config.supabaseUrl);
   } catch (error) {
-    status.textContent = "La URL de Supabase no es válida.";
+    status.textContent = "La URL de la base de datos no es válida.";
     return;
   }
   if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co")) {
-    status.textContent = "La URL debe corresponder a un proyecto de Supabase con HTTPS.";
+    status.textContent = "La conexión con la base de datos debe usar HTTPS.";
     return;
   }
   if (!isPublicKey(config.supabasePublishableKey)) {
@@ -99,7 +99,7 @@
       document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
       window.setInterval(() => { if (!document.hidden) refresh(); }, POLL_INTERVAL_MS);
     } catch (error) {
-      status.textContent = "No se pudo conectar con Supabase. Se muestran los valores históricos.";
+      status.textContent = "No se pudo conectar con la base de datos. Se muestran los valores históricos.";
     }
   }
   start();

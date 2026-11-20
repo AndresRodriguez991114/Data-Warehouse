@@ -33,11 +33,11 @@
     if (!config || !config.supabaseUrl || !config.supabasePublishableKey) throw new Error("Falta la URL o la clave publicable.");
     url = new URL(config.supabaseUrl);
   } catch (error) {
-    status.textContent = "Configura la URL de Supabase y una clave publicable válida.";
+    status.textContent = "Configura la URL de la base de datos y una clave publicable válida.";
     return;
   }
   if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co") || !isPublicKey(config.supabasePublishableKey)) {
-    status.textContent = "La conexión requiere HTTPS y una clave publicable de Supabase; nunca uses una clave secreta.";
+    status.textContent = "La conexión requiere HTTPS y una clave publicable; nunca uses una clave secreta.";
     return;
   }
 
@@ -67,7 +67,7 @@
     if (className) element.className = className;
     return element;
   };
-  const cacheSchemaError = "Supabase está devolviendo una caché con el formato anterior. En SQL Editor ejecuta sql/supabase/SUPABASE-GRAFICAS.sql y luego SELECT public.pgc_actualizar_graficas_energia_2026();";
+  const cacheSchemaError = "La base de datos está devolviendo una caché con el formato anterior. En SQL Editor ejecuta sql/supabase/SUPABASE-GRAFICAS.sql y luego SELECT public.pgc_actualizar_graficas_energia_2026();";
 
   function validateCache(data) {
     if (!data || data.estado !== "ok" || !Array.isArray(data.grupos) || !Array.isArray(data.horas) || !Array.isArray(data.ubicaciones) || !Array.isArray(data.recurso) || !data.totales || !data.periodo_comun) {
@@ -957,7 +957,7 @@
         headers: { apikey: config.supabasePublishableKey, "Content-Type": "application/json" },
         body: "{}"
       });
-      if (!response.ok) throw new Error(`Supabase respondió ${response.status}.`);
+      if (!response.ok) throw new Error(`La base de datos respondió ${response.status}.`);
       const data = await response.json();
       if (data.estado !== "ok") throw new Error("La caché aún no ha sido calculada.");
       validateCache(data);
