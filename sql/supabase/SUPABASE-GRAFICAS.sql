@@ -88,31 +88,49 @@ AS $$
                SUM(energia_consumida_total_wh::numeric) AS consumo_suma,
                SUM(energia_generada_wh::numeric) AS generacion_suma
         FROM public.fact_medicion_solar
+    ), dias AS (
+        -- Agregado diario: el período disponible es de semanas, no de meses.
+        SELECT fecha_hora::date AS dia,
+               COUNT(*) AS mediciones,
+               COUNT(energia_consumida_total_wh) AS consumo_no_nulo,
+               SUM(energia_consumida_total_wh::numeric) AS consumo_suma,
+               COUNT(energia_generada_wh) AS generacion_no_nula,
+               SUM(energia_generada_wh::numeric) AS generacion_suma
+        FROM public.fact_medicion_solar
+        GROUP BY 1
+    ), limites AS (
+        -- El ancho de cada tramo se ajusta al máximo registrado (20 tramos iguales).
+        SELECT NULLIF(MAX(energia_consumida_total_wh)::numeric, 0) / 20 AS consumo_ancho,
+               NULLIF(MAX(energia_generada_wh)::numeric, 0) / 20 AS generacion_ancho
+        FROM public.fact_medicion_solar
     ), histogramas AS (
         SELECT 'consumo' AS variable,
+               limites.consumo_ancho AS ancho,
                CASE WHEN energia_consumida_total_wh IS NULL THEN NULL
                     WHEN energia_consumida_total_wh < 0 THEN -1
-                    WHEN energia_consumida_total_wh >= 200 THEN 20
-                    ELSE FLOOR(energia_consumida_total_wh::numeric / 10)::integer END AS tramo,
+                    WHEN limites.consumo_ancho IS NULL OR limites.consumo_ancho <= 0 THEN 0
+                    ELSE LEAST(FLOOR(energia_consumida_total_wh::numeric / limites.consumo_ancho), 19)::integer END AS tramo,
                COUNT(*) AS mediciones
-        FROM public.fact_medicion_solar GROUP BY 2
+        FROM public.fact_medicion_solar CROSS JOIN limites GROUP BY 1, 2, 3
         UNION ALL
         SELECT 'generacion',
+               limites.generacion_ancho,
                CASE WHEN energia_generada_wh IS NULL THEN NULL
                     WHEN energia_generada_wh < 0 THEN -1
-                    WHEN energia_generada_wh >= 200 THEN 20
-                    ELSE FLOOR(energia_generada_wh::numeric / 10)::integer END,
+                    WHEN limites.generacion_ancho IS NULL OR limites.generacion_ancho <= 0 THEN 0
+                    ELSE LEAST(FLOOR(energia_generada_wh::numeric / limites.generacion_ancho), 19)::integer END,
                COUNT(*)
-        FROM public.fact_medicion_solar GROUP BY 2
+        FROM public.fact_medicion_solar CROSS JOIN limites GROUP BY 1, 2, 3
         UNION ALL
         SELECT 'bateria',
+               20::numeric,
                CASE WHEN nivel_bateria_pct IS NULL THEN NULL
                     WHEN nivel_bateria_pct < 0 THEN -1
                     WHEN nivel_bateria_pct > 100 THEN 5
                     WHEN nivel_bateria_pct = 100 THEN 4
                     ELSE FLOOR(nivel_bateria_pct::numeric / 20)::integer END,
                COUNT(*)
-        FROM public.fact_medicion_solar GROUP BY 2
+        FROM public.fact_medicion_solar GROUP BY 1, 2, 3
     )
     SELECT true, jsonb_build_object(
         'estado', 'ok',
@@ -126,6 +144,8 @@ AS $$
         'grupos', (SELECT COALESCE(jsonb_agg(to_jsonb(grupos) - 'primera_medicion' - 'ultima_medicion' ORDER BY mes, condicion, franja), '[]'::jsonb) FROM grupos WHERE mediciones >= 10),
         'horas_omitidas', (SELECT COUNT(*) FROM horas WHERE mediciones < 10),
         'horas', (SELECT COALESCE(jsonb_agg(to_jsonb(horas) ORDER BY hora), '[]'::jsonb) FROM horas WHERE mediciones >= 10),
+        'dias_omitidos', (SELECT COUNT(*) FROM dias WHERE mediciones < 10),
+        'dias', (SELECT COALESCE(jsonb_agg(to_jsonb(dias) ORDER BY dia), '[]'::jsonb) FROM dias WHERE mediciones >= 10),
         'ubicaciones_omitidas', (SELECT COUNT(*) FROM estratos WHERE mediciones < 10),
         'ubicaciones', (SELECT COALESCE(jsonb_agg(to_jsonb(estratos) ORDER BY dimension, categoria), '[]'::jsonb) FROM estratos WHERE mediciones >= 10),
         'histogramas', (SELECT COALESCE(jsonb_agg(to_jsonb(histogramas) ORDER BY variable, tramo), '[]'::jsonb) FROM histogramas WHERE mediciones >= 10),

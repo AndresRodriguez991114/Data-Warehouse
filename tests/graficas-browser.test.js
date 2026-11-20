@@ -34,6 +34,9 @@ const graphData = {
     { mes: "2026-01-01", condicion: "Soleado", franja: "Día", mediciones: 30, consumo_no_nulo: 30, consumo_suma: 300, generacion_no_nula: 30, generacion_suma: 360 },
     { mes: "2026-01-01", condicion: "Nublado", franja: "Noche", mediciones: 21, consumo_no_nulo: 21, consumo_suma: 465, generacion_no_nula: 21, generacion_suma: 150 }
   ],
+  dias: [
+    { dia: "2026-01-01", mediciones: 51, consumo_no_nulo: 51, consumo_suma: 765, generacion_no_nula: 51, generacion_suma: 510 }
+  ],
   horas: [
     { hora: 0, mediciones: 51, consumo_no_nulo: 51, consumo_suma: 765, generacion_no_nula: 51, generacion_suma: 510 }
   ],
@@ -42,9 +45,9 @@ const graphData = {
     { dimension: "estrato", categoria: "3", mediciones: 26, consumo_no_nulo: 26, consumo_suma: 315, generacion_no_nula: 26, generacion_suma: 255 }
   ],
   histogramas: [
-    { variable: "consumo", tramo: 1, mediciones: 51 },
-    { variable: "generacion", tramo: 2, mediciones: 51 },
-    { variable: "bateria", tramo: 2, mediciones: 51 }
+    { variable: "consumo", ancho: 1.5, tramo: 1, mediciones: 51 },
+    { variable: "generacion", ancho: 0.05, tramo: 2, mediciones: 51 },
+    { variable: "bateria", ancho: 20, tramo: 2, mediciones: 51 }
   ]
 };
 
@@ -83,14 +86,23 @@ test("la página presenta gráficas y decisiones desde Base de datos y sondea ca
     assert.match(await page.locator("#metric-generacion").innerText(), /10 Wh\/medición/);
     assert.match(await page.locator("#exploration-status").innerText(), /cada 5 minutos/);
     assert.match(await page.locator("#grafica-generacion-hora").textContent(), /00/);
-    assert.match(await page.locator("#grafica-consumo-ubicacion").innerText(), /Consumo total por estrato/);
+    assert.match(await page.locator("#grafica-consumo-ubicacion").innerText(), /Consumo promedio por estrato/);
     assert.match(await page.locator("#decision-list").innerText(), /66,67 %/);
     assert.deepEqual(await page.evaluate(() => window.__intervals), [300000]);
     const reducedCharts = await page.evaluate(() => window.__charts);
     assert.ok(reducedCharts.every(chart => chart.options.animation === false));
     const climate = reducedCharts.find(chart => chart.data.labels.includes("Soleado"));
-    assert.equal(new Set(climate.data.datasets[0].backgroundColor).size, 2);
+    assert.equal(climate.data.datasets[0].backgroundColor, "#5479b7");
     assert.deepEqual(climate.data.datasets[0].data, [21, 30]);
+    // Promedio por medición del estrato 2: 450 / 25.
+    const location = reducedCharts.find(chart => chart.data.labels.includes("2"));
+    assert.deepEqual(location.data.datasets[0].data, [18, 315 / 26]);
+    const generationHistogram = reducedCharts.find(chart => chart.data.labels.some(label => /^0,1 a 0,15 Wh$/.test(label)));
+    assert.ok(generationHistogram, "El histograma usa el ancho de tramo de la caché");
+    assert.match(await page.locator("#grafica-generacion-dia").textContent(), /2026-01-01/);
+    assert.match(await page.locator("#featured-charts-container").innerText(), /Cobertura solar[\s\S]*66,67/i);
+    assert.doesNotMatch(await page.locator("#featured-charts-container").innerText(), /Ahorro/i);
+    assert.match(await page.locator("#grafico-mes").innerText(), /enero de 2026/);
     assert.doesNotMatch(await page.locator("main").innerText(), /SQL Server verificados en SSMS|CAPTURA ESTÁTICA \/ POWER BI/i);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });

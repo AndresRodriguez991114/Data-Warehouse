@@ -40,7 +40,9 @@
   const POLL_INTERVAL_MS = 300000;
   const number = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
   const whole = new Intl.NumberFormat("es-CO");
-  const palette = ["#176d52", "#ca6d39", "#5479b7", "#a45b93", "#b36d43", "#668f61"];
+  const significant = new Intl.NumberFormat("es-CO", { maximumSignificantDigits: 3 });
+  // Un color fijo por variable en todo el dashboard.
+  const COLORS = { generacion: "#176d52", consumo: "#ca6d39", bateria: "#668f61", conteo: "#5479b7" };
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const charts = new Map();
   let combinedChart = null;
@@ -66,30 +68,30 @@
       category: "Comparativos operativos",
       description: "Contrasta condiciones climáticas, franjas y categorías de ubicación. Solo se publican grupos con al menos 10 mediciones.",
       specs: [
-        ["Mediciones por condición climática", "Cantidad de registros agregados por condición.", "groupCounts", "condicion", "bar", "Mediciones", "#b36d43"],
-        ["Generación promedio por clima", "Promedio ponderado por valores no nulos.", "groupAverage", ["condicion", "generacion"], "bar", "Wh por medición", "#176d52", "grafica-generacion-clima"],
-        ["Consumo promedio por franja", "Promedio ponderado por valores no nulos.", "groupAverage", ["franja", "consumo"], "bar", "Wh por medición", "#ca6d39", "grafica-consumo-franja"],
-        ["Consumo total por ubicación", "Usa estrato si está disponible; de lo contrario, barrio. Los grupos pequeños se omiten.", "locationSum", "consumo", "bar", "Wh acumulados", "#ca6d39", "grafica-consumo-ubicacion"],
-        ["Generación total por ubicación", "Usa estrato si está disponible; de lo contrario, barrio. Los grupos pequeños se omiten.", "locationSum", "generacion", "bar", "Wh acumulados", "#176d52", "grafica-generacion-ubicacion"]
+        ["Mediciones por condición climática", "Cantidad de registros agregados por condición.", "groupCounts", "condicion", "bar", "Mediciones", COLORS.conteo],
+        ["Generación promedio por clima", "Promedio ponderado por valores no nulos.", "groupAverage", ["condicion", "generacion"], "bar", "Wh por medición", COLORS.generacion, "grafica-generacion-clima"],
+        ["Consumo promedio por franja", "Promedio ponderado por valores no nulos.", "groupAverage", ["franja", "consumo"], "bar", "Wh por medición", COLORS.consumo, "grafica-consumo-franja"],
+        ["Consumo promedio por ubicación", "Promedio por medición, para comparar categorías con distinto número de viviendas. Usa estrato si está disponible; de lo contrario, barrio.", "locationAverage", "consumo", "bar", "Wh por medición", COLORS.consumo, "grafica-consumo-ubicacion"],
+        ["Generación promedio por ubicación", "Promedio por medición, para comparar categorías con distinto número de viviendas. Usa estrato si está disponible; de lo contrario, barrio.", "locationAverage", "generacion", "bar", "Wh por medición", COLORS.generacion, "grafica-generacion-ubicacion"]
       ]
     },
     distribucion: {
       category: "Distribución y frecuencia",
-      description: "Muestra la frecuencia por intervalos de consumo, generación y nivel de batería. Los grupos con menos de 10 mediciones se omiten.",
+      description: "Muestra la frecuencia por intervalos de consumo, generación y nivel de batería. Los intervalos con menos de 10 mediciones se omiten.",
       specs: [
-        ["Distribución del consumo", "Intervalos de 10 Wh · límite superior excluido.", "histogram", "consumo", "bar", "Mediciones", "#ca6d39", "grafica-distribucion-consumo"],
-        ["Distribución de la generación", "Intervalos de 10 Wh · límite superior excluido.", "histogram", "generacion", "bar", "Mediciones", "#176d52", "grafica-distribucion-generacion"],
-        ["Distribución del nivel de batería", "Intervalos de 20 % · el intervalo final incluye 100 %.", "histogram", "bateria", "bar", "Mediciones", "#668f61", "grafica-distribucion-bateria"]
+        ["Distribución del consumo", "20 intervalos de igual ancho entre 0 Wh y el máximo registrado · límite superior excluido, salvo el último.", "histogram", "consumo", "bar", "Mediciones", COLORS.consumo, "grafica-distribucion-consumo"],
+        ["Distribución de la generación", "20 intervalos de igual ancho entre 0 Wh y el máximo registrado · límite superior excluido, salvo el último.", "histogram", "generacion", "bar", "Mediciones", COLORS.generacion, "grafica-distribucion-generacion"],
+        ["Distribución del nivel de batería", "Intervalos de 20 % · el intervalo final incluye 100 %.", "histogram", "bateria", "bar", "Mediciones", COLORS.bateria, "grafica-distribucion-bateria"]
       ]
     },
     temporal: {
       category: "Tendencias de tiempo",
-      description: "Resume promedios por mes y energía total por hora del día en todo el período disponible.",
+      description: "Energía por día del período y energía acumulada por hora del día.",
       specs: [
-        ["Generación promedio por mes", "Promedio ponderado por mediciones no nulas.", "groupAverage", ["mes", "generacion"], "line", "Wh por medición", "#176d52"],
-        ["Consumo promedio por mes", "Promedio ponderado por mediciones no nulas.", "groupAverage", ["mes", "consumo"], "line", "Wh por medición", "#ca6d39"],
-        ["Generación total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período y según la zona de fecha_hora.", "hourSum", "generacion", "line", "Wh acumulados", "#176d52", "grafica-generacion-hora"],
-        ["Consumo total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período y según la zona de fecha_hora.", "hourSum", "consumo", "line", "Wh acumulados", "#ca6d39", "grafica-consumo-hora"]
+        ["Generación por día", "Wh generados cada día del período, sumando todas las ubicaciones.", "daySum", "generacion", "line", "Wh por día", COLORS.generacion, "grafica-generacion-dia"],
+        ["Consumo por día", "Wh consumidos cada día del período, sumando todas las ubicaciones.", "daySum", "consumo", "line", "Wh por día", COLORS.consumo, "grafica-consumo-dia"],
+        ["Generación total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período y según la zona de fecha_hora.", "hourSum", "generacion", "line", "Wh acumulados", COLORS.generacion, "grafica-generacion-hora"],
+        ["Consumo total por hora del día", "Wh acumulados por hora (0–23), sumados en todo el período y según la zona de fecha_hora.", "hourSum", "consumo", "line", "Wh acumulados", COLORS.consumo, "grafica-consumo-hora"]
       ]
     }
   };
@@ -98,20 +100,40 @@
     const battery = variable === "bateria";
     const total = Number(data.mediciones_total);
     return data.histogramas.filter(item => item.variable === variable).map(item => {
-      const step = battery ? 20 : 10;
+      // Las cachés nuevas traen el ancho del tramo; las anteriores usaban 10 Wh fijos.
+      const width = battery ? 20 : (item.ancho === undefined || item.ancho === null ? 10 : Number(item.ancho));
       const upper = battery ? 5 : 20;
       const unit = battery ? "%" : "Wh";
       const bucket = item.tramo === null ? null : Number(item.tramo);
       const count = Number(item.mediciones);
-      if (!Number.isSafeInteger(count) || count < 0 || (bucket !== null && !Number.isInteger(bucket))) throw new Error("Histograma inválido");
+      if (!Number.isSafeInteger(count) || count < 0 || (bucket !== null && !Number.isInteger(bucket)) || !Number.isFinite(width)) throw new Error("Histograma inválido");
       let label = "Sin dato";
       if (bucket !== null) {
         if (bucket < 0) label = `< 0 ${unit}`;
-        else if (bucket >= upper) label = battery ? "> 100 %" : `≥ 200 ${unit}`;
-        else label = `${bucket * step} a ${bucket * step + step} ${unit}${battery && bucket === 4 ? " (incluye 100)" : ""}`;
+        else if (bucket >= upper) label = battery ? "> 100 %" : `≥ ${significant.format(upper * width)} ${unit}`;
+        else label = `${significant.format(bucket * width)} a ${significant.format((bucket + 1) * width)} ${unit}${battery && bucket === 4 ? " (incluye 100)" : ""}`;
       }
       return { label, value: count, count, percent: Number.isSafeInteger(total) && total > 0 ? count / total * 100 : null };
     });
+  }
+
+  function monthLabel(value) {
+    if (!/^\d{4}-\d{2}/.test(String(value))) return String(value);
+    const date = new Date(`${String(value).slice(0, 7)}-01T00:00:00Z`);
+    return date.toLocaleDateString("es-CO", { month: "long", year: "numeric", timeZone: "UTC" });
+  }
+
+  function daySums(data, variable) {
+    if (!Array.isArray(data.dias)) return null;
+    const sumField = `${variable}_suma`;
+    return data.dias.map(item => {
+      const count = Number(item.mediciones);
+      const value = item[sumField] === null ? null : Number(item[sumField]);
+      if (typeof item.dia !== "string" || !Number.isSafeInteger(count) || count < 0 || (value !== null && !Number.isFinite(value))) {
+        throw new Error("Agregado diario inválido");
+      }
+      return { label: item.dia.slice(0, 10), value, count };
+    }).sort((left, right) => left.label.localeCompare(right.label));
   }
 
   function locationLabel(data) {
@@ -134,16 +156,10 @@
     }).sort((left, right) => left.label.localeCompare(right.label));
   }
 
-  function locationSums(data, variable) {
-    const sumField = `${variable}_suma`;
-    return data.ubicaciones.map(item => {
-      const count = Number(item.mediciones);
-      const value = item[sumField] === null ? null : Number(item[sumField]);
-      if (typeof item.categoria !== "string" || !Number.isSafeInteger(count) || count < 0 || (value !== null && !Number.isFinite(value))) {
-        throw new Error("Agregado por ubicación inválido");
-      }
-      return { label: item.categoria, value, count };
-    });
+  // Promedio por medición: las sumas favorecerían a las categorías con más viviendas.
+  function locationAverages(data, variable) {
+    if (data.ubicaciones.some(item => typeof item.categoria !== "string")) throw new Error("Agregado por ubicación inválido");
+    return api.groupAverage(data.ubicaciones, "categoria", variable);
   }
 
   function rowsFor(data, groups, source, key) {
@@ -154,7 +170,8 @@
       return api.groupAverage(groups, groupKey, variable);
     }
     if (source === "hourSum") return hourSums(data, key);
-    if (source === "locationSum") return locationSums(data, key);
+    if (source === "daySum") return daySums(data, key);
+    if (source === "locationAverage") return locationAverages(data, key);
     return [];
   }
 
@@ -194,9 +211,6 @@
     figure.append(caption, wrapper, details);
     container.append(figure);
 
-    const colorIndex = Math.max(0, palette.indexOf(color));
-    const colors = rows.map((row, index) => palette[(colorIndex + index) % palette.length]);
-
     const chart = new ChartClass(canvas, {
       type,
       data: {
@@ -204,8 +218,8 @@
         datasets: [{
           label: unit,
           data: rows.map(row => row.value),
-          backgroundColor: type === "bar" ? colors : color,
-          borderColor: type === "bar" ? colors : color,
+          backgroundColor: color,
+          borderColor: color,
           borderWidth: 2,
           borderRadius: type === "bar" ? 6 : 0,
           pointRadius: 4,
@@ -256,7 +270,7 @@
     container.replaceChildren();
     const month = monthSelect.value;
     const rows = api.combined(currentData.grupos, month);
-    combinedChart = draw(container, "Consumo por clima y franja", `Wh por medición · mes: ${month} · combinación calculada conjuntamente`, rows, "bar", "Wh por medición", "#176d52", "grafica-conjunto");
+    combinedChart = draw(container, "Consumo por clima y franja", `Wh por medición · ${monthLabel(month)} · combinación calculada conjuntamente`, rows, "bar", "Wh por medición", COLORS.consumo, "grafica-conjunto");
   }
 
   function renderCategory(categoryKey, categoryData, container, data) {
@@ -272,8 +286,10 @@
 
     categoryData.specs.forEach(spec => {
       const [title, description, source, key, chartType, unit, color, id] = spec;
-      const chartTitle = source === "locationSum" ? `${key === "consumo" ? "Consumo" : "Generación"} total por ${locationLabel(data)}` : title;
+      const chartTitle = source === "locationAverage" ? `${key === "consumo" ? "Consumo" : "Generación"} promedio por ${locationLabel(data)}` : title;
       const rows = rowsFor(data, data.grupos, source, key);
+      // Las cachés anteriores no traen el agregado diario: se omite la gráfica.
+      if (rows === null) return;
       charts.set(id || `${categoryKey}-${title}`, draw(chartsGrid, chartTitle, description, rows, chartType, unit, color, id));
     });
 
@@ -357,13 +373,13 @@
     const lowClimate = minBy(byClimate);
     const peakGenerationHour = maxBy(hourSums(data, "generacion"));
     const peakConsumptionHour = maxBy(hourSums(data, "consumo"));
-    const topLocation = maxBy(locationSums(data, "consumo"));
+    const topLocation = maxBy(locationAverages(data, "consumo"));
     const date = value => value ? String(value).replace("T", " ").slice(0, 19) : "Sin fecha";
 
     const knowledge = [{
       title: "Cobertura del período consultado",
       fields: [
-        ["Pregunta", "¿Qué volumen y cobertura energética registra Supabase?"],
+        ["Pregunta", "¿Qué volumen y cobertura energética registra la base de datos?"],
         ["Período", `${date(data.primera_medicion)} a ${date(data.ultima_medicion)}`],
         ["Registros", `${whole.format(Number(totals.mediciones))} mediciones`],
         ["Generación y consumo", `${number.format(generated)} Wh y ${number.format(consumed)} Wh`],
@@ -378,7 +394,7 @@
         fields: [
           ["Generación máxima", peakGenerationHour ? `${peakGenerationHour.label}:00 · ${number.format(peakGenerationHour.value)} Wh en el período` : "Sin datos suficientes"],
           ["Consumo máximo", peakConsumptionHour ? `${peakConsumptionHour.label}:00 · ${number.format(peakConsumptionHour.value)} Wh en el período` : "Sin datos suficientes"],
-          ["Procedimiento", "Suma la energía por hora registrada en fecha_hora, según la zona horaria configurada en Supabase; no es un promedio diario."],
+          ["Procedimiento", "Suma la energía por hora registrada en fecha_hora, según la zona horaria configurada en la base de datos; no es un promedio diario."],
           ["Limitación", "Las diferencias dependen de la cantidad de días y mediciones disponibles en cada hora."]
         ]
       });
@@ -400,7 +416,7 @@
         title: "Consumo por franja y ubicación",
         fields: [
           ["Mayor promedio por franja", peakPeriod ? `${peakPeriod.label}: ${number.format(peakPeriod.value)} Wh por medición (n=${whole.format(peakPeriod.count)})` : "Sin datos suficientes"],
-          [`Mayor consumo por ${locationLabel(data)}`, topLocation ? `${topLocation.label}: ${number.format(topLocation.value)} Wh (n=${whole.format(topLocation.count)})` : "Sin datos suficientes"],
+          [`Mayor consumo promedio por ${locationLabel(data)}`, topLocation ? `${topLocation.label}: ${number.format(topLocation.value)} Wh por medición (n=${whole.format(topLocation.count)})` : "Sin datos suficientes"],
           ["Protección de datos", "Los grupos con menos de 10 mediciones no se publican."]
         ]
       });
@@ -445,8 +461,8 @@
       decisions.push({
         title: `Priorizar el análisis de ${locationLabel(data)}`,
         fields: [
-          ["Acción propuesta", "Comparar el consumo entre categorías y verificar que cada grupo tenga cobertura suficiente antes de asignar recursos."],
-          ["Respaldo", `Mayor suma registrada: ${topLocation.label}, ${number.format(topLocation.value)} Wh.`],
+          ["Acción propuesta", "Comparar el consumo promedio entre categorías y verificar que cada grupo tenga cobertura suficiente antes de asignar recursos."],
+          ["Respaldo", `Mayor consumo promedio: ${topLocation.label}, ${number.format(topLocation.value)} Wh por medición (n=${whole.format(topLocation.count)}).`],
           ["Seguimiento", "Revisar la evolución de estas categorías en períodos equivalentes."],
           ["Limitación", "No se publican grupos con menos de 10 mediciones; las categorías no identifican hogares."]
         ]
@@ -458,97 +474,80 @@
   function renderFeaturedCharts(data) {
     if (!featuredContainer || !ChartClass) return;
     featuredContainer.replaceChildren();
-    
-    const section = document.createElement("div");
-    section.className = "featured-charts-section";
-    
-    const grid = document.createElement("div");
-    grid.className = "featured-charts-grid";
-    
+
     const consumoHoras = hourSums(data, "consumo");
     const generacionHoras = hourSums(data, "generacion");
-    const consumoUbicacion = locationSums(data, "consumo");
-    
-    const consumoTotal = Number(data.totales.consumo_suma) || 0;
-    const generacionTotal = Number(data.totales.generacion_suma) || 0;
-    const ahorroPercent = generacionTotal > 0 ? ((generacionTotal - consumoTotal) / generacionTotal * 100) : 0;
-    
     if (!consumoHoras.length || !generacionHoras.length) return;
-    
+
+    const consumoTotal = Number(data.totales.consumo_suma);
+    const generacionTotal = Number(data.totales.generacion_suma);
+    // Cobertura solar: qué parte del consumo agregado cubre la generación (misma fórmula de los hallazgos).
+    const cobertura = Number.isFinite(generacionTotal) && Number.isFinite(consumoTotal) && consumoTotal > 0 ? generacionTotal / consumoTotal * 100 : null;
+
+    const section = document.createElement("div");
+    section.className = "featured-charts-section";
+    const grid = document.createElement("div");
+    grid.className = "featured-charts-grid";
+
     const figure = document.createElement("figure");
     figure.className = "exploration-chart";
-    figure.style.setProperty("--chart-accent", "#5479b7");
-    
+    figure.id = "grafica-energia-hora";
+    figure.style.setProperty("--chart-accent", COLORS.generacion);
+
     const caption = document.createElement("figcaption");
-    caption.append(text("h3", "Energía por hora del día"), text("p", "Generación y consumo total acumulados por hora"));
-    
+    caption.append(text("h3", "Energía por hora del día"), text("p", "Generación y consumo acumulados por hora en todo el período."));
+
+    const metricsBox = document.createElement("div");
+    metricsBox.className = "featured-metrics";
+    [
+      ["Generación total", Number.isFinite(generacionTotal) ? number.format(generacionTotal) : "Sin datos", "Wh"],
+      ["Consumo total", Number.isFinite(consumoTotal) ? number.format(consumoTotal) : "Sin datos", "Wh"],
+      ["Cobertura solar", cobertura === null ? "Sin datos" : number.format(cobertura), "% del consumo"]
+    ].forEach(([label, value, unit]) => {
+      const item = document.createElement("div");
+      item.className = "metric-item";
+      const labelElement = text("span", label);
+      labelElement.className = "metric-label";
+      const valueElement = text("strong", value);
+      valueElement.className = "metric-value";
+      const unitElement = text("span", unit);
+      unitElement.className = "metric-unit";
+      item.append(labelElement, valueElement, unitElement);
+      metricsBox.append(item);
+    });
+
     const wrapper = document.createElement("div");
     wrapper.className = "chart-canvas";
     const canvas = document.createElement("canvas");
     canvas.setAttribute("role", "img");
     canvas.setAttribute("aria-label", "Energía por hora del día");
     wrapper.append(canvas);
-    
-    const metricsBox = document.createElement("div");
-    metricsBox.className = "featured-metrics";
-    metricsBox.innerHTML = `
-      <div class="metric-item">
-        <span class="metric-label">Generación Total</span>
-        <strong class="metric-value">${number.format(generacionTotal)}</strong>
-        <span class="metric-unit">Wh</span>
-      </div>
-      <div class="metric-item">
-        <span class="metric-label">Consumo Total</span>
-        <strong class="metric-value">${number.format(consumoTotal)}</strong>
-        <span class="metric-unit">Wh</span>
-      </div>
-      <div class="metric-item">
-        <span class="metric-label">Ahorro</span>
-        <strong class="metric-value">${number.format(ahorroPercent)}</strong>
-        <span class="metric-unit">%</span>
-      </div>
-    `;
-    
+
     figure.append(caption, metricsBox, wrapper);
     grid.append(figure);
-    
-    const colorIndex = 1;
-    const colors = [palette[0], palette[1]];
-    
+    section.append(grid);
+    featuredContainer.append(section);
+
+    const dataset = (label, rows, color) => ({
+      label,
+      data: rows.map(row => row.value),
+      borderColor: color,
+      backgroundColor: `${color}26`,
+      borderWidth: 3,
+      pointRadius: 3,
+      pointBackgroundColor: color,
+      pointBorderColor: "#fff",
+      pointBorderWidth: 2,
+      pointHoverRadius: 6,
+      tension: 0.3,
+      fill: true
+    });
+
     const chart = new ChartClass(canvas, {
       type: "line",
       data: {
         labels: generacionHoras.map(row => row.label),
-        datasets: [
-          {
-            label: "Generación Total",
-            data: generacionHoras.map(row => row.value),
-            borderColor: colors[0],
-            backgroundColor: colors[0] + "15",
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: colors[0],
-            pointBorderColor: "#fff",
-            pointBorderWidth: 2,
-            pointHoverRadius: 7,
-            tension: 0.4,
-            fill: true
-          },
-          {
-            label: "Consumo Total",
-            data: consumoHoras.map(row => row.value),
-            borderColor: colors[1],
-            backgroundColor: colors[1] + "15",
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: colors[1],
-            pointBorderColor: "#fff",
-            pointBorderWidth: 2,
-            pointHoverRadius: 7,
-            tension: 0.4,
-            fill: true
-          }
-        ]
+        datasets: [dataset("Generación", generacionHoras, COLORS.generacion), dataset("Consumo", consumoHoras, COLORS.consumo)]
       },
       options: {
         responsive: true,
@@ -556,97 +555,24 @@
         interaction: { mode: "index", intersect: false },
         animation: reducedMotion.matches ? false : { duration: 900, easing: "easeOutQuart" },
         plugins: {
-          legend: { 
-            display: true,
-            position: "top",
-            labels: { font: { size: 12 }, usePointStyle: true, padding: 15 }
-          },
-          tooltip: { 
-            backgroundColor: "rgba(0,0,0,0.8)",
-            padding: 12,
-            titleFont: { size: 12, weight: "bold" },
-            bodyFont: { size: 11 },
-            callbacks: { 
+          legend: { display: true, position: "top", labels: { font: { size: 12 }, usePointStyle: true, padding: 15 } },
+          tooltip: {
+            callbacks: {
               afterLabel: context => {
-                const hour = generacionHoras[context.dataIndex] || consumoHoras[context.dataIndex];
-                return `Mediciones: ${whole.format(hour.count)}`;
+                const rows = context.datasetIndex === 0 ? generacionHoras : consumoHoras;
+                const row = rows[context.dataIndex];
+                return row ? `Mediciones: ${whole.format(row.count)}` : "";
               }
             }
           }
         },
         scales: {
-          y: { 
-            beginAtZero: true,
-            title: { display: true, text: "Wh acumulados" },
-            grid: { color: "rgba(0,0,0,0.05)" }
-          },
-          x: { ticks: { maxRotation: 0, minRotation: 0 } }
+          y: { beginAtZero: true, title: { display: true, text: "Wh acumulados" }, grid: { color: "rgba(0,0,0,0.05)" } },
+          x: { title: { display: true, text: "Hora del día" }, ticks: { maxRotation: 0, minRotation: 0 } }
         }
       }
     });
-    
-    charts.set("featured-combined", { destroy: () => { chart.destroy(); } });
-    
-    if (consumoUbicacion.length > 0) {
-      const barFigure = document.createElement("figure");
-      barFigure.className = "exploration-chart";
-      barFigure.style.setProperty("--chart-accent", "#ca6d39");
-      
-      const barCaption = document.createElement("figcaption");
-      barCaption.append(text("h3", "Consumo total por ubicación"), text("p", "Suma acumulada por categoría o barrio"));
-      
-      const barWrapper = document.createElement("div");
-      barWrapper.className = "chart-canvas";
-      const barCanvas = document.createElement("canvas");
-      barCanvas.setAttribute("role", "img");
-      barCanvas.setAttribute("aria-label", "Consumo por ubicación");
-      barWrapper.append(barCanvas);
-      
-      barFigure.append(barCaption, barWrapper);
-      grid.append(barFigure);
-      
-      const barColors = consumoUbicacion.map((_, idx) => palette[(idx) % palette.length]);
-      
-      const barChart = new ChartClass(barCanvas, {
-        type: "bar",
-        data: {
-          labels: consumoUbicacion.map(row => row.label),
-          datasets: [{
-            label: "Wh acumulados",
-            data: consumoUbicacion.map(row => row.value),
-            backgroundColor: barColors,
-            borderColor: barColors,
-            borderWidth: 1,
-            borderRadius: 6
-          }]
-        },
-        options: {
-          indexAxis: "y",
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: reducedMotion.matches ? false : { duration: 900, easing: "easeOutQuart" },
-          plugins: {
-            legend: { display: false },
-            tooltip: { 
-              callbacks: { 
-                afterLabel: context => {
-                  const row = consumoUbicacion[context.dataIndex];
-                  return `Mediciones: ${whole.format(row.count)}`;
-                }
-              } 
-            }
-          },
-          scales: {
-            x: { beginAtZero: true, title: { display: true, text: "Wh acumulados" } }
-          }
-        }
-      });
-      
-      charts.set("featured-ubicacion", { destroy: () => { barChart.destroy(); } });
-    }
-    
-    section.append(grid);
-    featuredContainer.append(section);
+    charts.set("featured-combined", { destroy: () => chart.destroy() });
   }
 
   function render(data) {
@@ -672,7 +598,7 @@
     const selected = monthSelect.value;
     monthSelect.replaceChildren();
     months.forEach(month => {
-      const option = text("option", month);
+      const option = text("option", monthLabel(month));
       option.value = month;
       monthSelect.append(option);
     });
@@ -686,7 +612,7 @@
     document.getElementById("exploration-period").textContent = `Período: ${date(data.primera_medicion)} a ${date(data.ultima_medicion)} · ${whole.format(Number(data.mediciones_total))} mediciones · los gráficos omiten grupos con menos de 10 registros.`;
     const calculated = new Date(data.calculado_en);
     status.textContent = Number.isFinite(calculated.getTime())
-      ? `Datos agregados por Supabase: ${calculated.toLocaleString("es-CO", { timeZone: "America/Bogota" })}. La caché se actualiza cada 5 minutos.`
+      ? `Datos agregados por la base de datos: ${calculated.toLocaleString("es-CO", { timeZone: "America/Bogota" })}. La caché se actualiza cada 5 minutos.`
       : "Hora de cálculo no disponible; la caché se actualiza cada 5 minutos.";
   }
 
@@ -716,7 +642,7 @@
         if (element && !currentData) element.textContent = "No disponible";
       });
       if (!currentData) {
-        document.getElementById("exploration-period").textContent = "Período no disponible hasta actualizar la caché de Supabase.";
+        document.getElementById("exploration-period").textContent = "Período no disponible hasta actualizar la caché de la base de datos.";
       }
       status.textContent = currentData
         ? `No se pudo actualizar; se conservan los últimos datos cargados. ${reason}`
