@@ -9,7 +9,7 @@
   "use strict";
 
   // Duración de un ciclo completo de iluminación (milisegundos).
-  const CICLO_MS = 60000;
+  const CICLO_MS = 10000;
   const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
   const ORBIT_URL = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js";
 

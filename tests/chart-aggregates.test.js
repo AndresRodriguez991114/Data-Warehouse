@@ -22,6 +22,11 @@ test("el análisis conjunto respeta simultáneamente mes, clima y franja", () =>
   assert.equal(result.find(item => item.label === "Soleado / Noche").count, 10);
 });
 
+test("sin mes, el análisis conjunto usa todo el período", () => {
+  const result = combined(groups, "");
+  assert.equal(result.find(item => item.label === "Soleado / Día").count, 150);
+});
+
 test("cuenta mediciones en lugar de grupos", () => {
   assert.equal(groupCounts(groups, "condicion")[0].value, 160);
 });

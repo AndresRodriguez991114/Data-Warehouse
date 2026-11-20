@@ -72,7 +72,9 @@ AS $$
         LEFT JOIN hora ON hora.franja_key = medicion.franja_key
         GROUP BY 1, 2, 3
     ), horas AS (
-        SELECT EXTRACT(HOUR FROM fecha_hora)::integer AS hora,
+        -- Cada agregado lleva su mes para que el dashboard pueda filtrar todas las gráficas por mes.
+        SELECT DATE_TRUNC('month', fecha_hora)::date AS mes,
+               EXTRACT(HOUR FROM fecha_hora)::integer AS hora,
                COUNT(*) AS mediciones,
                COUNT(energia_consumida_total_wh) AS consumo_no_nulo,
                SUM(energia_consumida_total_wh::numeric) AS consumo_suma,
@@ -81,9 +83,10 @@ AS $$
                COUNT(energia_eolica_wh) AS eolica_no_nula,
                SUM(energia_eolica_wh::numeric) AS eolica_suma
         FROM public.fact_medicion_energia
-        GROUP BY 1
+        GROUP BY 1, 2
     ), estratos AS (
         SELECT
+            DATE_TRUNC('month', medicion.fecha_hora)::date AS mes,
             CASE WHEN ubicacion.coincidencias IS NULL THEN 'ubicacion'
                  WHEN ubicacion.coincidencias > 1 THEN 'clave'
                  WHEN ubicacion.estrato IS NOT NULL THEN 'estrato'
@@ -97,26 +100,28 @@ AS $$
             SUM(medicion.energia_consumida_total_wh::numeric) AS consumo_suma
         FROM public.fact_medicion_energia AS medicion
         LEFT JOIN ubicaciones AS ubicacion ON ubicacion.ubicacion_key = medicion.ubicacion_key
-        GROUP BY 1, 2
+        GROUP BY 1, 2, 3
     ), recurso AS (
         -- Generación según el recurso disponible: irradiancia para la solar, viento para la eólica.
-        SELECT 'irradiancia' AS variable,
+        SELECT DATE_TRUNC('month', fecha_hora)::date AS mes,
+               'irradiancia' AS variable,
                LEAST(FLOOR(irradiancia_wm2::numeric / 100), 12)::integer AS tramo,
                COUNT(*) AS mediciones,
                COUNT(energia_generada_wh) AS generacion_no_nula,
                SUM(energia_generada_wh::numeric) AS generacion_suma
         FROM public.fact_medicion_energia
         WHERE irradiancia_wm2 >= 0
-        GROUP BY 1, 2
+        GROUP BY 1, 2, 3
         UNION ALL
-        SELECT 'viento',
+        SELECT DATE_TRUNC('month', fecha_hora)::date,
+               'viento',
                LEAST(FLOOR(velocidad_viento_ms::numeric), 20)::integer,
                COUNT(*),
                COUNT(energia_eolica_wh),
                SUM(energia_eolica_wh::numeric)
         FROM public.fact_medicion_energia
         WHERE velocidad_viento_ms >= 0
-        GROUP BY 1, 2
+        GROUP BY 1, 2, 3
     ), totales AS (
         SELECT COUNT(*) AS mediciones,
                MIN(fecha_hora) AS primera_medicion,
@@ -160,7 +165,7 @@ AS $$
     )
     SELECT true, jsonb_build_object(
         'estado', 'ok',
-        'version', 2,
+        'version', 3,
         'calculado_en', statement_timestamp(),
         'totales', (SELECT to_jsonb(totales) FROM totales),
         'periodo_comun', (SELECT to_jsonb(comun) FROM comun),
@@ -171,11 +176,11 @@ AS $$
         'mediciones_omitidas', (SELECT COALESCE(SUM(mediciones), 0) FROM grupos WHERE mediciones < 10),
         'grupos', (SELECT COALESCE(jsonb_agg(to_jsonb(grupos) ORDER BY mes, condicion, franja), '[]'::jsonb) FROM grupos WHERE mediciones >= 10),
         'horas_omitidas', (SELECT COUNT(*) FROM horas WHERE mediciones < 10),
-        'horas', (SELECT COALESCE(jsonb_agg(to_jsonb(horas) ORDER BY hora), '[]'::jsonb) FROM horas WHERE mediciones >= 10),
+        'horas', (SELECT COALESCE(jsonb_agg(to_jsonb(horas) ORDER BY mes, hora), '[]'::jsonb) FROM horas WHERE mediciones >= 10),
         'ubicaciones_omitidas', (SELECT COUNT(*) FROM estratos WHERE mediciones < 10),
-        'ubicaciones', (SELECT COALESCE(jsonb_agg(to_jsonb(estratos) ORDER BY dimension, categoria), '[]'::jsonb) FROM estratos WHERE mediciones >= 10),
+        'ubicaciones', (SELECT COALESCE(jsonb_agg(to_jsonb(estratos) ORDER BY mes, dimension, categoria), '[]'::jsonb) FROM estratos WHERE mediciones >= 10),
         'recurso_omitidos', (SELECT COUNT(*) FROM recurso WHERE mediciones < 10),
-        'recurso', (SELECT COALESCE(jsonb_agg(to_jsonb(recurso) ORDER BY variable, tramo), '[]'::jsonb) FROM recurso WHERE mediciones >= 10)
+        'recurso', (SELECT COALESCE(jsonb_agg(to_jsonb(recurso) ORDER BY mes, variable, tramo), '[]'::jsonb) FROM recurso WHERE mediciones >= 10)
     )
     ON CONFLICT (unico) DO UPDATE SET contenido = EXCLUDED.contenido;
 $$;

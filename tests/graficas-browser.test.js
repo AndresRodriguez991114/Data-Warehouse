@@ -134,6 +134,18 @@ test("la página presenta gráficas y decisiones desde Base de datos y sondea ca
     const location = reducedCharts.find(chart => chart.data.labels.includes("Estrato 2"));
     assert.deepEqual(location.data.datasets[0].data, [18, 315 / 26]);
     assert.doesNotMatch(await page.locator("main").innerText(), /SQL Server verificados en SSMS|CAPTURA ESTÁTICA \/ POWER BI/i);
+    // Por defecto se muestra todo el período; al elegir un mes se filtran todas las gráficas.
+    assert.equal(await page.locator("#grafico-mes").inputValue(), "");
+    assert.match(await page.locator("#combined-chart").innerText(), /todo el período/);
+    await page.selectOption("#grafico-mes", "2026-02-01");
+    assert.match(await page.locator("#combined-chart").innerText(), /febrero de 2026/);
+    const februaryClimate = (await page.evaluate(() => window.__charts)).filter(chart => chart.data.labels.length === 1 && chart.data.labels[0] === "Nublado" && chart.data.datasets.length === 2).pop();
+    assert.deepEqual(februaryClimate.data.datasets[1].data, [10]);
+    assert.match(await page.locator("#grafica-mezcla .share-bar").getAttribute("aria-label"), /Eólica: 100 %/);
+    // La caché de prueba no trae el mes en horas, ubicaciones ni recurso: se avisa.
+    assert.match(await page.locator(".exploration-filter__note").innerText(), /perfil horario/);
+    await page.selectOption("#grafico-mes", "");
+    assert.equal(await page.locator(".exploration-filter__note").isVisible(), false);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       const overflow = await page.evaluate(() => ({

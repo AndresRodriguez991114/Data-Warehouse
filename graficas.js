@@ -9,6 +9,10 @@
   const decisionList = document.getElementById("decision-list");
   const featuredContainer = document.getElementById("featured-charts-container");
   if (!status || !content || !monthSelect || !chartsContainer) return;
+  const monthNote = document.createElement("p");
+  monthNote.className = "exploration-filter__note";
+  monthNote.hidden = true;
+  monthSelect.parentElement.after(monthNote);
   if (!api) {
     status.textContent = "No se pudo inicializar el análisis de gráficas.";
     return;
@@ -53,6 +57,7 @@
   const charts = new Map();
   let combinedChart = null;
   let currentData = null;
+  let currentView = null;
   let ChartClass = null;
   let loading = false;
   let lastRequest = 0;
@@ -72,6 +77,44 @@
 
   const date = value => value ? String(value).replace("T", " ").slice(0, 16) : "sin fecha";
   const day = value => value ? String(value).slice(0, 10) : "sin fecha";
+
+  // Vista de los agregados para el mes elegido ("" = todo el período). Los agregados que no traen
+  // el campo «mes» (caché anterior a la versión 3) no se pueden filtrar y se devuelven completos.
+  function monthView(data, month) {
+    if (!month) return { ...data, month: "", scope: "en el período común", unfiltered: [] };
+    const inMonth = rows => rows.filter(row => (row.mes || "Sin dato") === month);
+    const unfiltered = [];
+    const pick = (key, name) => {
+      const rows = data[key];
+      if (rows.every(row => "mes" in row)) return inMonth(rows);
+      unfiltered.push(name);
+      return rows;
+    };
+    const grupos = inMonth(data.grupos);
+    const sum = field => grupos.reduce((total, group) => total + (group[field] === null || group[field] === undefined ? 0 : Number(group[field])), 0);
+    const start = String(month).slice(0, 10);
+    const parts = /^(\d{4})-(\d{2})/.exec(start);
+    const end = parts ? new Date(Date.UTC(Number(parts[1]), Number(parts[2]), 0)).toISOString().slice(0, 10) : start;
+    return {
+      ...data,
+      month,
+      scope: `en ${monthLabel(month)}`,
+      unfiltered,
+      grupos,
+      horas: pick("horas", "el perfil horario"),
+      ubicaciones: pick("ubicaciones", "el consumo por ubicación"),
+      recurso: pick("recurso", "la irradiancia y el viento"),
+      // La mezcla y la cobertura del mes salen de los grupos de ese mes.
+      periodo_comun: {
+        inicio: start,
+        fin: end,
+        mediciones: sum("mediciones"),
+        generacion_suma: sum("generacion_suma"),
+        eolica_suma: sum("eolica_suma"),
+        consumo_suma: sum("consumo_suma")
+      }
+    };
+  }
 
   function monthLabel(value, short) {
     if (!/^\d{4}-\d{2}/.test(String(value))) return String(value);
@@ -489,17 +532,18 @@
     return null;
   }
 
-  function chartSpecs(data) {
+  // «data» es la vista del mes elegido; «full» conserva todo el período para la serie mensual.
+  function chartSpecs(data, full = data) {
     const shared = sharedPeriod(data);
     const sharedText = shared ? `${day(shared.start)} a ${day(shared.end)}` : null;
     const climate = sourceSeries(data.grupos, "condicion", ["solar", "eolica"]);
     const period = sourceSeries(data.grupos, "franja", ["solar", "eolica", "consumo"]);
-    const years = new Set(data.grupos.map(group => String(group.mes).slice(0, 4)));
+    const years = new Set(full.grupos.map(group => String(group.mes).slice(0, 4)));
     const monthShort = value => {
       const label = monthLabel(value, true).replace(/\./g, "").replace(/ de /, " ");
       return years.size > 1 ? label : label.split(" ")[0];
     };
-    const monthly = sourceSeries(data.grupos, "mes", ["solar", "eolica"], monthShort, value => monthLabel(value));
+    const monthly = sourceSeries(full.grupos, "mes", ["solar", "eolica"], monthShort, value => monthLabel(value));
     const irradiance = resourceRows(data, "irradiancia");
     const wind = resourceRows(data, "viento");
     // Un estrato numérico se lee mejor con su nombre: «Estrato 3» en lugar de «3».
@@ -514,12 +558,14 @@
         charts: [
           { id: "grafica-generacion-clima", title: "Generación promedio por clima", description: "Wh por medición de cada fuente según la condición climática.", insight: bestBySource(climate), type: "bar", unit: "Wh por medición", series: climate },
           { id: "grafica-energia-franja", title: "Generación y consumo por franja", description: "Wh por medición de cada fuente y del consumo en cada franja del día.", insight: periodInsight(period), type: "bar", unit: "Wh por medición", series: period },
-          { id: "grafica-generacion-mes", title: "Generación promedio por mes", description: "Wh por medición. Un mes sin punto indica que esa fuente no tiene mediciones en él.", insight: `Hay datos solares en ${monthsWith(monthly[0])} meses y eólicos en ${monthsWith(monthly[1])}. ${bestBySource(monthly) || ""}`.trim(), type: "line", unit: "Wh por medición", series: monthly },
+          { id: "grafica-generacion-mes", title: "Generación promedio por mes", description: "Wh por medición en todo el período (no depende del mes elegido). Un mes sin punto indica que esa fuente no tiene mediciones en él.", insight: `Hay datos solares en ${monthsWith(monthly[0])} meses y eólicos en ${monthsWith(monthly[1])}. ${bestBySource(monthly) || ""}`.trim(), type: "line", unit: "Wh por medición", series: monthly },
           shared ? {
             id: "grafica-mezcla",
             share: true,
             title: "Mezcla de generación",
-            description: `Participación de cada fuente en la energía generada entre ${sharedText}, el período con datos de ambas.`,
+            description: data.month
+              ? `Participación de cada fuente en la energía generada en ${monthLabel(data.month)}.`
+              : `Participación de cada fuente en la energía generada entre ${sharedText}, el período con datos de ambas.`,
             insight: shared.solarShare === null ? null : `La ${shared.solarShare >= 50 ? "solar" : "eólica"} aporta la mayor parte: ${number.format(Math.max(shared.solarShare, shared.windShare))} % de la energía generada.`
           } : null
         ].filter(Boolean)
@@ -551,17 +597,22 @@
     return "categoría de ubicación";
   }
 
-  function renderCombined() {
-    if (!currentData || !ChartClass) return;
+  function renderCombined(view) {
     const container = document.getElementById("combined-chart");
     if (combinedChart) combinedChart.destroy();
+    combinedChart = null;
     container.replaceChildren();
-    const month = monthSelect.value;
+    const month = view.month;
+    const scope = month ? monthLabel(month) : "todo el período";
     const series = ["solar", "eolica", "consumo"].map(key => ({
       label: SOURCES[key].label,
       color: SOURCES[key].color,
-      rows: api.combined(currentData.grupos, month, SOURCES[key].variable)
+      rows: api.combined(view.grupos, month, SOURCES[key].variable)
     }));
+    if (!series.some(item => finite(item.rows).length)) {
+      container.replaceChildren(text("p", `No hay datos de ${scope} para esta comparación.`));
+      return;
+    }
     const renewable = series[0].rows.map(row => {
       const windRow = series[1].rows.find(item => item.label === row.label);
       const total = (Number.isFinite(row.value) ? row.value : 0) + (windRow && Number.isFinite(windRow.value) ? windRow.value : 0);
@@ -573,9 +624,9 @@
       id: "grafica-conjunto",
       wide: true,
       horizontal: true,
-      title: `Solar, eólica y consumo en ${monthLabel(month)}`,
+      title: `Solar, eólica y consumo en ${scope}`,
       description: "Wh por medición · cada fila combina una condición climática y una franja del día.",
-      insight: best ? `En ${monthLabel(month)}, la combinación con más generación renovable es «${best.label}» (${whValue(best.value)} por medición entre solar y eólica).` : null,
+      insight: best ? `En ${scope}, la combinación con más generación renovable es «${best.label}» (${whValue(best.value)} por medición entre solar y eólica).` : null,
       type: "bar",
       unit: "Wh por medición",
       series
@@ -593,7 +644,7 @@
     const grid = document.createElement("div");
     grid.className = "exploration-charts";
     category.charts.forEach(spec => {
-      const drawn = spec.share ? drawShare(grid, spec, sharedPeriod(currentData)) : draw(grid, spec);
+      const drawn = spec.share ? drawShare(grid, spec, sharedPeriod(currentView || currentData)) : draw(grid, spec);
       if (drawn) charts.set(spec.id, drawn);
     });
     section.append(grid);
@@ -811,8 +862,8 @@
     metricsBox.className = "featured-metrics";
     [
       ["Cobertura renovable", shared && shared.coverage !== null ? `${number.format(shared.coverage)} %` : "Sin datos", "del consumo, solar + eólica", "metric-item metric-item--hero"],
-      ["Generación solar", solarValue, `${solarUnit} en el período común`.trim(), "metric-item", COLORS.solar],
-      ["Generación eólica", windValue, `${windUnit} en el período común`.trim(), "metric-item", COLORS.eolica]
+      ["Generación solar", solarValue, `${solarUnit} ${data.scope}`.trim(), "metric-item", COLORS.solar],
+      ["Generación eólica", windValue, `${windUnit} ${data.scope}`.trim(), "metric-item", COLORS.eolica]
     ].forEach(([label, value, unit, className, color]) => {
       const item = document.createElement("div");
       item.className = className;
@@ -842,7 +893,7 @@
       tall: true,
       nightBands: true,
       title: "Perfil horario: solar, eólica y consumo",
-      description: `Wh por medición en cada hora del día; la zona gris marca las horas sin sol.${shared ? ` Período común de las dos fuentes: ${day(shared.start)} a ${day(shared.end)}.` : ""}`,
+      description: `Wh por medición en cada hora del día; la zona gris marca las horas sin sol.${data.month ? ` Datos de ${monthLabel(data.month)}.` : shared ? ` Período común de las dos fuentes: ${day(shared.start)} a ${day(shared.end)}.` : ""}`,
       insight: windHours.length ? `La eólica supera a la solar en ${windHours.length} de 24 horas (${hourRanges(windHours)}): es la fuente que sostiene la noche.` : "La solar supera a la eólica en todas las horas con datos.",
       type: "line",
       unit: "Wh por medición",
@@ -851,36 +902,41 @@
     }));
   }
 
-  function render(data) {
-    currentData = data;
-    renderMetrics(data.totales);
-    content.hidden = false;
+  // Dibuja todas las gráficas que dependen del mes elegido.
+  function renderCharts() {
+    if (!currentData || !ChartClass) return;
     charts.forEach(chart => {
       if (chart && chart.destroy) chart.destroy();
     });
     charts.clear();
-    if (combinedChart && combinedChart.destroy) combinedChart.destroy();
-    combinedChart = null;
     chartsContainer.replaceChildren();
-    renderFeaturedCharts(data);
-    chartSpecs(data).forEach(category => renderCategory(category, chartsContainer));
+    const view = currentView = monthView(currentData, monthSelect.value);
+    renderFeaturedCharts(view);
+    chartSpecs(view, currentData).forEach(category => renderCategory(category, chartsContainer));
+    renderCombined(view);
+    monthNote.hidden = !view.unfiltered.length;
+    monthNote.textContent = view.unfiltered.length
+      ? `La caché de la base de datos todavía no separa por mes ${view.unfiltered.join(", ")}: esas gráficas muestran todo el período. Ejecuta sql/supabase/SUPABASE-GRAFICAS.sql y luego SELECT public.pgc_actualizar_graficas_energia_2026();`
+      : "";
+  }
 
+  function render(data) {
+    currentData = data;
+    renderMetrics(data.totales);
+    content.hidden = false;
     const months = [...new Set(data.grupos.map(group => group.mes || "Sin dato"))].sort();
     const selected = monthSelect.value;
-    monthSelect.replaceChildren();
+    const all = text("option", "Todos los meses");
+    all.value = "";
+    monthSelect.replaceChildren(all);
     months.forEach(month => {
       const option = text("option", monthLabel(month));
       option.value = month;
       monthSelect.append(option);
     });
-    // Por defecto, el mes más reciente con generación solar y eólica, para que la comparación tenga ambas fuentes.
-    const complete = months.filter(month => data.grupos.some(group => (group.mes || "Sin dato") === month && Number(group.generacion_no_nula) > 0)
-      && data.grupos.some(group => (group.mes || "Sin dato") === month && Number(group.eolica_no_nula) > 0));
-    if (months.includes(selected)) monthSelect.value = selected;
-    else if (complete.length) monthSelect.value = complete[complete.length - 1];
-    else if (months.length) monthSelect.value = months[months.length - 1];
-    if (months.length) renderCombined();
-    else document.getElementById("combined-chart").replaceChildren(text("p", "No hay datos mensuales suficientes para esta comparación."));
+    // Conserva el mes elegido entre actualizaciones; por defecto, todo el período.
+    monthSelect.value = months.includes(selected) ? selected : "";
+    renderCharts();
 
     renderFeedback(data);
     const totals = data.totales;
@@ -928,7 +984,7 @@
     }
   }
 
-  monthSelect.addEventListener("change", renderCombined);
+  monthSelect.addEventListener("change", renderCharts);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refresh();
   });

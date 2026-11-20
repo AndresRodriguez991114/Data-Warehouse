@@ -48,7 +48,7 @@ test("consulta SQL agrega energía solar y eólica, calcula el período común y
     await db.exec("SET ROLE anon;");
     const data = (await db.query("SELECT public.pgc_graficas_publicas_2026() AS data;")).rows[0].data;
     assert.equal(data.estado, "ok");
-    assert.equal(data.version, 2);
+    assert.equal(data.version, 3);
     assert.equal(data.mediciones_total, 71);
     assert.equal(data.totales.generacion_suma, 1275);
     assert.equal(data.totales.eolica_suma, 240);
@@ -66,6 +66,8 @@ test("consulta SQL agrega energía solar y eólica, calcula el período común y
     assert.equal(data.grupos[0].eolica_no_nula, 20);
     assert.equal(data.mediciones_omitidas, 1);
     assert.equal(data.horas[0].eolica_suma, 240);
+    // Todos los agregados llevan su mes para filtrar el dashboard.
+    assert.ok([...data.horas, ...data.ubicaciones, ...data.recurso].every(item => /^2026-01-01/.test(item.mes)));
     assert.equal(data.ubicaciones[0].categoria, "Centro");
     assert.deepEqual(data.recurso.map(item => [item.variable, item.tramo, item.mediciones]), [["irradiancia", 4, 51], ["viento", 6, 20]]);
     await assert.rejects(db.exec("SELECT public.pgc_actualizar_graficas_energia_2026();"), /permission denied/i);
