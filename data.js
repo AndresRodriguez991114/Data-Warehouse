@@ -9,7 +9,7 @@ window.PROJECT_DATA = {
     ["Sede o extensión", "Extensión Chía"],
     ["Integrantes", "César Eduardo Bolívar González · Andrés Yesid Rodríguez Bermúdez"],
     ["Docente", "Edison Gustavo Cañón Varela"],
-    ["Año de portada", "2026"]
+    ["Año", "2026"]
   ],
   knowledge: [],
   decisions: []
