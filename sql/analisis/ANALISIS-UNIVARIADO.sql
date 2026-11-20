@@ -8,14 +8,21 @@ WITH dispositivos AS (
            FLOOR(medicion.energia_consumida_total_wh::numeric / 10) * 10 AS inicio_tramo_wh,
            NULL::text AS categoria,
            COUNT(*) AS mediciones
-    FROM public.fact_medicion_solar AS medicion
+    FROM public.fact_medicion_energia AS medicion
     GROUP BY 2
     UNION ALL
     SELECT 'generacion_wh',
            FLOOR(medicion.energia_generada_wh::numeric / 10) * 10,
            NULL::text,
            COUNT(*)
-    FROM public.fact_medicion_solar AS medicion
+    FROM public.fact_medicion_energia AS medicion
+    GROUP BY 2
+    UNION ALL
+    SELECT 'eolica_wh',
+           FLOOR(medicion.energia_eolica_wh::numeric / 10) * 10,
+           NULL::text,
+           COUNT(*)
+    FROM public.fact_medicion_energia AS medicion
     GROUP BY 2
     UNION ALL
     SELECT 'tipo_dispositivo', NULL::numeric,
@@ -24,7 +31,7 @@ WITH dispositivos AS (
                 WHEN dispositivo.tipo_dispositivo IS NULL THEN '[tipo sin dato]'
                 ELSE dispositivo.tipo_dispositivo END,
            COUNT(*)
-    FROM public.fact_medicion_solar AS medicion
+    FROM public.fact_medicion_energia AS medicion
     LEFT JOIN dispositivos AS dispositivo ON medicion.dispositivo_key = dispositivo.dispositivo_key
     GROUP BY 3
 )

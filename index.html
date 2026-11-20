@@ -147,7 +147,7 @@
         </ul>
 
         <h3>05 · Datos del dashboard</h3>
-        <p>Las tablas anteriores corresponden al Data Warehouse en SQL Server. El dashboard no se conecta a SQL Server: lee una copia publicada en la base de datos en la nube, con la tabla de hechos <code>fact_medicion_solar</code> y las dimensiones de condición climática (<code>dim_clima</code>), franja del día (<code>dim_hora</code>) y ubicación (<code>dim_ubicacion</code>). Por eso los conteos del dashboard pueden diferir de los de esta sección según la fecha de la última publicación.</p>
+        <p>Las tablas anteriores corresponden al Data Warehouse en SQL Server. El dashboard no se conecta a SQL Server: lee una copia publicada en la base de datos en la nube, con la tabla de hechos unificada <code>fact_medicion_energia</code> (mediciones solares y eólicas: irradiancia, energía generada por el panel, velocidad y dirección del viento, potencia y energía eólica, consumo y batería) y las dimensiones de condición climática (<code>dim_clima</code>), franja del día (<code>dim_hora</code>) y ubicación (<code>dim_ubicacion</code>). Por eso los conteos del dashboard pueden diferir de los de esta sección según la fecha de la última publicación.</p>
       </section>
 
       <section class="section dashboard-section" id="dashboard">
@@ -159,9 +159,12 @@
           <div><strong id="metric-mediciones">Cargando…</strong><span>mediciones</span></div>
           <div><strong id="metric-dispositivos">Cargando…</strong><span>dispositivos</span></div>
           <div><strong id="metric-ubicaciones">Cargando…</strong><span>ubicaciones</span></div>
-          <div><strong id="metric-generacion">Cargando…</strong><span>generación promedio</span></div>
-          <div><strong id="metric-consumo">Cargando…</strong><span>consumo promedio</span></div>
+          <div><strong id="metric-generacion">Cargando…</strong><span>generación solar promedio</span></div>
+          <div><strong id="metric-irradiancia">Cargando…</strong><span>irradiancia promedio</span></div>
           <div><strong id="metric-bateria">Cargando…</strong><span>batería promedio</span></div>
+          <div><strong id="metric-eolica">Cargando…</strong><span>generación eólica promedio</span></div>
+          <div><strong id="metric-viento">Cargando…</strong><span>velocidad del viento promedio</span></div>
+          <div><strong id="metric-consumo">Cargando…</strong><span>consumo promedio</span></div>
         </div>
         <p id="exploration-period">Período: pendiente de consulta.</p>
         <div id="exploration-content" hidden>
@@ -172,8 +175,8 @@
           <div id="exploration-charts" aria-label="Gráficas comparativas de la base de datos"></div>
           <div class="chart-category" id="combined-section">
             <div class="category-header">
-              <h3>Consumo por clima y franja</h3>
-              <p>Promedio de consumo calculado conjuntamente para el mes seleccionado.</p>
+              <h3>Energía por clima y franja</h3>
+              <p>Generación solar, generación eólica y consumo promedio para el mes seleccionado.</p>
             </div>
             <div id="combined-chart" class="exploration-charts"></div>
           </div>
@@ -182,7 +185,7 @@
 
       <section class="section" id="hallazgos">
         <div class="section-heading"><div><span class="section-number">05 / CONOCIMIENTO</span><h2>Lo que nos dicen los datos</h2></div><p></p></div>
-        <p>Los patrones de 1.003.209 mediciones de 354 ubicaciones de Cajicá apuntan a cuatro ideas: la generación solar es pequeña frente al consumo, se concentra en el día, depende del clima, y el consumo se desplaza hacia la noche.</p>
+        <p>Los hallazgos se recalculan con los agregados del dashboard en cada actualización y leen juntas la energía solar y la eólica: qué parte del consumo cubren entre las dos, en qué horas la eólica compensa la falta de sol, cómo responde cada fuente al clima y dónde se concentra la demanda.</p>
         <div id="knowledge-list" class="knowledge-list"></div>
       </section>
 

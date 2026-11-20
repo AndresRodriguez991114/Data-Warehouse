@@ -1,15 +1,15 @@
 BEGIN;
 
-CREATE SCHEMA pgc_energia_cache_2026;
+CREATE SCHEMA IF NOT EXISTS pgc_energia_cache_2026;
 REVOKE ALL ON SCHEMA pgc_energia_cache_2026 FROM PUBLIC, anon, authenticated;
 
-CREATE TABLE pgc_energia_cache_2026.resumen (
+CREATE TABLE IF NOT EXISTS pgc_energia_cache_2026.resumen (
     unico boolean PRIMARY KEY DEFAULT true CHECK (unico),
     contenido jsonb NOT NULL
 );
 REVOKE ALL ON TABLE pgc_energia_cache_2026.resumen FROM PUBLIC, anon, authenticated;
 
-CREATE FUNCTION public.pgc_actualizar_cache_energia_2026()
+CREATE OR REPLACE FUNCTION public.pgc_actualizar_cache_energia_2026()
 RETURNS void
 LANGUAGE sql
 SECURITY DEFINER
@@ -33,7 +33,7 @@ AS $$
         'consumo_promedio_wh', AVG(energia_consumida_total_wh),
         'bateria_promedio_pct', AVG(nivel_bateria_pct)
     ) END
-    FROM public.fact_medicion_solar
+    FROM public.fact_medicion_energia
     ON CONFLICT (unico) DO UPDATE SET contenido = EXCLUDED.contenido;
 $$;
 REVOKE ALL ON FUNCTION public.pgc_actualizar_cache_energia_2026() FROM PUBLIC, anon, authenticated;

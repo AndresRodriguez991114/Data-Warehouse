@@ -18,6 +18,9 @@ SELECT
     ROUND(AVG(medicion.energia_consumida_total_wh)::numeric, 2) AS consumo_promedio_wh_por_medicion,
     COUNT(medicion.energia_generada_wh) AS generacion_no_nula,
     ROUND(AVG(medicion.energia_generada_wh)::numeric, 2) AS generacion_promedio_wh_por_medicion,
+    COUNT(medicion.energia_eolica_wh) AS eolica_no_nula,
+    ROUND(AVG(medicion.energia_eolica_wh)::numeric, 2) AS eolica_promedio_wh_por_medicion,
+    ROUND(AVG(medicion.velocidad_viento_ms)::numeric, 2) AS viento_promedio_ms,
     COUNT(medicion.nivel_bateria_pct) AS bateria_no_nula,
     ROUND(AVG(medicion.nivel_bateria_pct)::numeric, 2) AS bateria_promedio_pct,
     COUNT(*) FILTER (WHERE medicion.nivel_bateria_pct < 0 OR medicion.nivel_bateria_pct > 100) AS bateria_fuera_de_rango,
@@ -25,7 +28,7 @@ SELECT
     COUNT(*) FILTER (WHERE ubicacion.coincidencias > 1) AS ubicacion_duplicada,
     COUNT(*) FILTER (WHERE dispositivo.coincidencias IS NULL) AS dispositivo_sin_correspondencia,
     COUNT(*) FILTER (WHERE dispositivo.coincidencias > 1) AS dispositivo_duplicado
-FROM public.fact_medicion_solar AS medicion
+FROM public.fact_medicion_energia AS medicion
 LEFT JOIN ubicaciones AS ubicacion ON medicion.ubicacion_key = ubicacion.ubicacion_key
 LEFT JOIN dispositivos AS dispositivo ON medicion.dispositivo_key = dispositivo.dispositivo_key
 GROUP BY DATE_TRUNC('month', medicion.fecha_hora)::date, ubicacion.barrio, dispositivo.tipo_dispositivo

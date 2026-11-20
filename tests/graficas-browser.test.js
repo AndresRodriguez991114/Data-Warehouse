@@ -13,41 +13,52 @@ const browserPath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
 const graphData = {
   estado: "ok",
+  version: 2,
   calculado_en: "2026-07-28T12:00:00Z",
   primera_medicion: "2026-01-01T00:00:00",
-  ultima_medicion: "2026-01-31T23:59:00",
-  mediciones_total: 51,
+  ultima_medicion: "2026-02-28T23:00:00",
+  mediciones_total: 71,
   totales: {
-    mediciones: 51,
+    mediciones: 71,
     dispositivos: 2,
     ubicaciones: 2,
+    consumo_no_nulo: 71,
     generacion_no_nula: 51,
-    consumo_no_nulo: 51,
+    eolica_no_nula: 20,
     bateria_no_nula: 51,
-    generacion_promedio_wh: 10,
+    irradiancia_no_nula: 51,
+    viento_no_nulo: 20,
     consumo_promedio_wh: 15,
+    generacion_promedio_wh: 10,
+    eolica_promedio_wh: 12,
     bateria_promedio_pct: 53,
+    irradiancia_promedio_wm2: 450,
+    viento_promedio_ms: 6.5,
+    consumo_suma: 765,
     generacion_suma: 510,
-    consumo_suma: 765
+    eolica_suma: 240,
+    solar_inicio: "2026-01-01T00:00:00",
+    solar_fin: "2026-01-31T23:00:00",
+    eolica_inicio: "2026-01-15T00:00:00",
+    eolica_fin: "2026-02-28T23:00:00"
   },
+  periodo_comun: { inicio: "2026-01-15T00:00:00", fin: "2026-01-31T23:00:00", mediciones: 40, generacion_suma: 300, eolica_suma: 150, consumo_suma: 600 },
   grupos: [
-    { mes: "2026-01-01", condicion: "Soleado", franja: "Día", mediciones: 30, consumo_no_nulo: 30, consumo_suma: 300, generacion_no_nula: 30, generacion_suma: 360 },
-    { mes: "2026-01-01", condicion: "Nublado", franja: "Noche", mediciones: 21, consumo_no_nulo: 21, consumo_suma: 465, generacion_no_nula: 21, generacion_suma: 150 }
-  ],
-  dias: [
-    { dia: "2026-01-01", mediciones: 51, consumo_no_nulo: 51, consumo_suma: 765, generacion_no_nula: 51, generacion_suma: 510 }
+    { mes: "2026-01-01", condicion: "Soleado", franja: "Día", mediciones: 30, consumo_no_nulo: 30, consumo_suma: 300, generacion_no_nula: 30, generacion_suma: 360, eolica_no_nula: 10, eolica_suma: 50 },
+    { mes: "2026-01-01", condicion: "Nublado", franja: "Noche", mediciones: 21, consumo_no_nulo: 21, consumo_suma: 465, generacion_no_nula: 21, generacion_suma: 150, eolica_no_nula: 10, eolica_suma: 190 },
+    { mes: "2026-02-01", condicion: "Nublado", franja: "Noche", mediciones: 10, consumo_no_nulo: 0, consumo_suma: null, generacion_no_nula: 0, generacion_suma: null, eolica_no_nula: 10, eolica_suma: 100 }
   ],
   horas: [
-    { hora: 0, mediciones: 51, consumo_no_nulo: 51, consumo_suma: 765, generacion_no_nula: 51, generacion_suma: 510 }
+    { hora: 0, mediciones: 30, consumo_no_nulo: 30, consumo_suma: 450, generacion_no_nula: 30, generacion_suma: 0, eolica_no_nula: 15, eolica_suma: 150 },
+    { hora: 12, mediciones: 41, consumo_no_nulo: 41, consumo_suma: 315, generacion_no_nula: 21, generacion_suma: 510, eolica_no_nula: 5, eolica_suma: 10 }
   ],
   ubicaciones: [
-    { dimension: "estrato", categoria: "2", mediciones: 25, consumo_no_nulo: 25, consumo_suma: 450, generacion_no_nula: 25, generacion_suma: 255 },
-    { dimension: "estrato", categoria: "3", mediciones: 26, consumo_no_nulo: 26, consumo_suma: 315, generacion_no_nula: 26, generacion_suma: 255 }
+    { dimension: "estrato", categoria: "2", mediciones: 25, consumo_no_nulo: 25, consumo_suma: 450 },
+    { dimension: "estrato", categoria: "3", mediciones: 26, consumo_no_nulo: 26, consumo_suma: 315 }
   ],
-  histogramas: [
-    { variable: "consumo", ancho: 1.5, tramo: 1, mediciones: 51 },
-    { variable: "generacion", ancho: 0.05, tramo: 2, mediciones: 51 },
-    { variable: "bateria", ancho: 20, tramo: 2, mediciones: 51 }
+  recurso: [
+    { variable: "irradiancia", tramo: 4, mediciones: 51, generacion_no_nula: 51, generacion_suma: 510 },
+    { variable: "viento", tramo: 6, mediciones: 20, generacion_no_nula: 20, generacion_suma: 240 }
   ]
 };
 
@@ -80,29 +91,43 @@ test("la página presenta gráficas y decisiones desde Base de datos y sondea ca
     await page.locator("#knowledge-list details").first().waitFor({ state: "visible" });
     assert.equal(await page.locator("#knowledge-list details").count(), 4);
     assert.equal(await page.locator("#decision-list article").count(), 4);
-    assert.equal(await page.locator("#exploration-charts .exploration-chart").count(), 12);
+    assert.equal(await page.locator("#exploration-charts .exploration-chart").count(), 7);
+    assert.equal(await page.locator("#featured-charts-container .exploration-chart").count(), 1);
     assert.equal(await page.locator("#combined-chart .exploration-chart").count(), 1);
-    assert.match(await page.locator("#metric-mediciones").innerText(), /51/);
+    assert.match(await page.locator("#metric-mediciones").innerText(), /71/);
     assert.match(await page.locator("#metric-generacion").innerText(), /10 Wh\/medición/);
+    assert.match(await page.locator("#metric-eolica").innerText(), /12 Wh\/medición/);
+    assert.match(await page.locator("#metric-viento").innerText(), /6,5 m\/s/);
     assert.match(await page.locator("#exploration-status").innerText(), /cada 5 minutos/);
-    assert.match(await page.locator("#grafica-generacion-hora").textContent(), /00/);
+    assert.match(await page.locator("#exploration-period").innerText(), /eólica: 2026-01-15 a 2026-02-28/);
     assert.match(await page.locator("#grafica-consumo-ubicacion").innerText(), /Consumo promedio por estrato/);
-    assert.match(await page.locator("#decision-list").innerText(), /66,67 %/);
+    assert.match(await page.locator("#featured-charts-container").innerText(), /Cobertura renovable[\s\S]*75/i);
+    // Cobertura del período común: (300 + 150) / 600.
+    assert.match(await page.locator("#decision-list").innerText(), /75 %/);
+    // A las 00:00 la eólica (10 Wh) supera a la solar (0 Wh).
+    assert.match(await page.locator("#knowledge-list").textContent(), /supera a la solar en 1 de 24 horas: 00:00/);
+    assert.match(await page.locator("#grafico-mes").innerText(), /enero de 2026[\s\S]*febrero de 2026/);
+    const mainText = await page.locator("main").innerText();
+    assert.doesNotMatch(mainText, /Mediciones por condición climática|Distribución del consumo|Ahorro/i);
     assert.deepEqual(await page.evaluate(() => window.__intervals), [300000]);
     const reducedCharts = await page.evaluate(() => window.__charts);
     assert.ok(reducedCharts.every(chart => chart.options.animation === false));
-    const climate = reducedCharts.find(chart => chart.data.labels.includes("Soleado"));
-    assert.equal(climate.data.datasets[0].backgroundColor, "#5479b7");
-    assert.deepEqual(climate.data.datasets[0].data, [21, 30]);
-    // Promedio por medición del estrato 2: 450 / 25.
+    const climate = reducedCharts.find(chart => chart.data.labels.includes("Soleado") && chart.data.labels.length === 2);
+    assert.deepEqual(climate.data.datasets.map(dataset => [dataset.label, dataset.borderColor]), [["Solar", "#176d52"], ["Eólica", "#5479b7"]]);
+    assert.deepEqual(climate.data.datasets[0].data, [150 / 21, 12]);
+    assert.deepEqual(climate.data.datasets[1].data, [14.5, 5]);
+    const profile = reducedCharts[0];
+    assert.deepEqual(profile.data.labels, ["00:00", "12:00"]);
+    assert.deepEqual(profile.data.datasets.map(dataset => dataset.label), ["Solar", "Eólica", "Consumo"]);
+    const mix = reducedCharts.find(chart => chart.type === "doughnut");
+    assert.deepEqual(mix.data.datasets[0].data, [300, 150]);
+    const monthly = reducedCharts.find(chart => chart.type === "line" && chart.data.labels.length === 2 && chart.data.labels[0] !== "00:00");
+    assert.deepEqual(monthly.data.datasets[0].data, [10, null]);
+    assert.deepEqual(monthly.data.datasets[1].data, [12, 10]);
+    assert.ok(reducedCharts.some(chart => chart.data.labels.includes("400–500 W/m²")));
+    assert.ok(reducedCharts.some(chart => chart.data.labels.includes("6–7 m/s")));
     const location = reducedCharts.find(chart => chart.data.labels.includes("2"));
     assert.deepEqual(location.data.datasets[0].data, [18, 315 / 26]);
-    const generationHistogram = reducedCharts.find(chart => chart.data.labels.some(label => /^0,1 a 0,15 Wh$/.test(label)));
-    assert.ok(generationHistogram, "El histograma usa el ancho de tramo de la caché");
-    assert.match(await page.locator("#grafica-generacion-dia").textContent(), /2026-01-01/);
-    assert.match(await page.locator("#featured-charts-container").innerText(), /Cobertura solar[\s\S]*66,67/i);
-    assert.doesNotMatch(await page.locator("#featured-charts-container").innerText(), /Ahorro/i);
-    assert.match(await page.locator("#grafico-mes").innerText(), /enero de 2026/);
     assert.doesNotMatch(await page.locator("main").innerText(), /SQL Server verificados en SSMS|CAPTURA ESTÁTICA \/ POWER BI/i);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });

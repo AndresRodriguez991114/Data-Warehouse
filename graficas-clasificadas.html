@@ -24,11 +24,12 @@
       <p class="sidebar-label">GRÁFICAS</p>
       <nav>
         <a href="index.html"><span>←</span> Volver a inicio</a>
-        <a href="#comparacion"><span>01</span> Comparación</a>
-        <a href="#distribucion"><span>02</span> Distribución</a>
-        <a href="#relacion"><span>03</span> Relación</a>
+        <a href="#categoria-complementariedad"><span>01</span> Solar y eólica</a>
+        <a href="#categoria-recurso"><span>02</span> Recurso y generación</a>
+        <a href="#categoria-consumo"><span>03</span> Consumo</a>
+        <a href="#combined-section"><span>04</span> Clima y franja</a>
       </nav>
-      <div class="sidebar-note"><span class="status-dot"></span> VISUALIZACIÓN INTERACTIVA<br><strong>Energía solar comunitaria</strong></div>
+      <div class="sidebar-note"><span class="status-dot"></span> VISUALIZACIÓN INTERACTIVA<br><strong>Energía solar y eólica</strong></div>
     </aside>
     <main id="contenido">
       <section class="section" id="graficas-principales">
@@ -50,7 +51,7 @@
 
         <div id="exploration-content" hidden>
           <div class="exploration-filter">
-            <label for="grafico-mes">Filtrar por mes (gráfica combinada):</label>
+            <label for="grafico-mes">Mes de la comparación por clima y franja:</label>
             <select id="grafico-mes" aria-label="Seleccione el mes para la gráfica combinada"></select>
           </div>
 
@@ -60,8 +61,8 @@
           <!-- Gráfica combinada interactiva -->
           <div class="chart-category" id="combined-section" style="margin-top: 48px; padding-top: 32px; border-top: 2px solid var(--ink);">
             <div class="category-header">
-              <h3>Gráficas especializadas</h3>
-              <p>Gráficas especializadas para análisis técnicos específicos del sistema energético</p>
+              <h3>Energía por clima y franja</h3>
+              <p>Generación solar, generación eólica y consumo promedio para el mes seleccionado.</p>
             </div>
             <div id="combined-chart" class="exploration-charts"></div>
           </div>
@@ -78,20 +79,20 @@
         
         <div class="content-grid">
           <article>
-            <h3>Gráficas básicas y de comparación</h3>
-            <p>Comparan valores entre diferentes categorías o grupos para identificar diferencias y tendencias. Son útiles para determinar cuáles son las características más frecuentes o cómo varían los promedios según diferentes factores.</p>
+            <h3>Solar y eólica</h3>
+            <p>Comparan las dos fuentes en la misma unidad (Wh por medición) por clima, franja del día y mes, y muestran qué parte de la energía generada aporta cada una en el período en que ambas tienen datos.</p>
           </article>
           <article>
-            <h3>Gráficas de distribución y frecuencia</h3>
-            <p>Muestran la distribución de datos en intervalos o rangos para identificar patrones de frecuencia. Permiten ver cómo se concentran las mediciones en diferentes rangos de valores.</p>
+            <h3>Recurso y generación</h3>
+            <p>Relacionan cada fuente con el recurso que la produce: la generación solar según la irradiancia y la eólica según la velocidad del viento.</p>
           </article>
           <article>
-            <h3>Gráficas de relación y composición</h3>
-            <p>Muestran tendencias, evolución temporal y combinaciones de variables para identificar relaciones. Son especialmente útiles para análisis de series temporales y comportamientos complejos.</p>
+            <h3>Consumo</h3>
+            <p>Muestran la demanda que deben cubrir las dos fuentes, con promedios por medición para comparar categorías de ubicación de distinto tamaño.</p>
           </article>
           <article>
-            <h3>Gráficas especializadas</h3>
-            <p>Gráficas especializadas para análisis técnicos específicos del sistema energético. Estas gráficas permiten hacer análisis multidimensionales y combinaciones de variables particulares.</p>
+            <h3>Clima y franja</h3>
+            <p>Combinan condición climática y franja del día en un mes para ver en qué situaciones la eólica compensa la caída de la solar.</p>
           </article>
         </div>
       </section>

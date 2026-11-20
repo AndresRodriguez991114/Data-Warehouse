@@ -37,11 +37,12 @@
     });
   }
 
-  function combined(groups, month) {
+  // Promedio de una variable para cada combinación de clima y franja del mes indicado.
+  function combined(groups, month, variable = "consumo") {
     return groupAverage(groups.filter(group => (group.mes || "Sin dato") === month).map(group => ({
       ...group,
       combinacion: `${group.condicion || "Sin dato"} / ${group.franja || "Sin dato"}`
-    })), "combinacion", "consumo");
+    })), "combinacion", variable);
   }
 
   const api = { groupAverage, groupCounts, combined };

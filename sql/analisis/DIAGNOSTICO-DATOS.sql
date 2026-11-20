@@ -10,10 +10,17 @@ SELECT
     COUNT(*) FILTER (WHERE energia_generada_wh IS NULL) AS generacion_faltante,
     COUNT(*) FILTER (WHERE energia_consumida_total_wh IS NULL) AS consumo_faltante,
     COUNT(*) FILTER (WHERE nivel_bateria_pct IS NULL) AS bateria_faltante,
+    COUNT(*) FILTER (WHERE energia_eolica_wh IS NULL) AS eolica_faltante,
+    COUNT(*) FILTER (WHERE energia_generada_wh IS NULL AND energia_eolica_wh IS NULL) AS sin_ninguna_generacion,
     COUNT(*) FILTER (WHERE energia_generada_wh < 0) AS generacion_negativa,
+    COUNT(*) FILTER (WHERE energia_eolica_wh < 0) AS eolica_negativa,
+    COUNT(*) FILTER (WHERE velocidad_viento_ms < 0) AS viento_negativo,
+    COUNT(*) FILTER (WHERE direccion_viento_grados < 0 OR direccion_viento_grados >= 360) AS direccion_fuera_de_rango,
     COUNT(*) FILTER (WHERE energia_consumida_total_wh < 0) AS consumo_negativo,
     COUNT(*) FILTER (WHERE nivel_bateria_pct < 0 OR nivel_bateria_pct > 100) AS bateria_fuera_de_rango,
     ROUND(AVG(energia_generada_wh)::numeric, 2) AS generacion_promedio_wh_por_medicion,
+    ROUND(AVG(energia_eolica_wh)::numeric, 2) AS eolica_promedio_wh_por_medicion,
+    ROUND(AVG(velocidad_viento_ms)::numeric, 2) AS viento_promedio_ms,
     ROUND(AVG(energia_consumida_total_wh)::numeric, 2) AS consumo_promedio_wh_por_medicion,
     ROUND(AVG(nivel_bateria_pct)::numeric, 2) AS bateria_promedio_pct
-FROM public.fact_medicion_solar;
+FROM public.fact_medicion_energia;
