@@ -13,6 +13,7 @@
   <script src="app.js" defer></script>
   <script src="chart-aggregates.js" defer></script>
   <script src="graficas.js" defer></script>
+  <script src="maqueta-energia.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -53,7 +54,16 @@
         <div class="section-heading"><div><span class="section-number">02 / PROCESO</span><h2>De la pregunta a la decisión</h2></div></div>
         <div class="steps"><div><span>01</span><strong>Comprensión del negocio</strong><p>Definir el monitoreo de generación y consumo</p></div><div><span>02</span><strong>Comprensión de los datos</strong><p>Combinar telemetría del ESP32-S3 con mediciones simuladas.</p></div><div><span>03</span><strong>Preparación</strong><p>Transformar los registros y controlar su calidad.</p></div><div><span>04</span><strong>Modelado</strong><p>Organizar las mediciones en un modelo dimensional.</p></div><div><span>05</span><strong>Evaluación</strong><p>Conciliar los conteos y comprobar la repetición de la carga.</p></div><div><span>06</span><strong>Despliegue</strong><p>Consultar agregados de la base de datos y apoyar decisiones con gráficas actualizadas.</p></div></div>
         <p>El alcance temporal y los conteos mostrados en el dashboard se leen de la base de datos al cargar la página. La maqueta física corresponde a un único ESP32-S3; el número de dispositivos y ubicaciones de la base describe los registros disponibles, no la cantidad de prototipos físicos.</p>
-        <h3>Desarrollo de la solución</h3><p>La maqueta utiliza un ESP32-S3 para medir voltaje y corriente del panel solar y de la batería cada dos segundos. En las pruebas se observaron voltajes de panel entre 1,68 y 2,26 V, y de batería entre 3,72 y 3,85 V. La batería es de litio; una tira LED representa la carga.</p><p>El flujo del proyecto es ESP32 → MQTT → Node-RED → SQL Server → limpieza → SSIS → Data Warehouse. Esta página consulta únicamente los agregados publicados en la base de datos en la nube (Supabase); no conecta el navegador a SQL Server ni expone registros individuales. El servicio de alertas por correo fue reactivado y la incidencia de permisos está resuelta.</p>
+        <h3>Desarrollo de la solución</h3><p>La maqueta utiliza un ESP32-S3 para medir voltaje y corriente del panel solar y de la batería cada dos segundos. En las pruebas se observaron voltajes de panel entre 1,68 y 2,26 V, y de batería entre 3,72 y 3,85 V. La batería es de litio; una tira LED representa la carga.</p>
+        <figure class="maqueta-figure" aria-labelledby="maqueta-titulo">
+          <div class="maqueta-head"><div><span class="section-number">MAQUETA 3D</span><h3 id="maqueta-titulo">Módulo de energía renovable</h3></div><button type="button" class="maqueta-btn" id="maqueta-pausa" aria-pressed="false">Pausar</button></div>
+          <div class="maqueta-stage" id="maqueta-energia">
+            <span class="maqueta-fase" data-fase="sol" aria-live="off">Día · 09:00</span>
+            <span class="maqueta-hint">Arrastra para girar</span>
+            <div class="maqueta-progreso" aria-hidden="true"><span></span></div>
+          </div>
+          <figcaption>Dos aerogeneradores, dos paneles solares, consola con dos pantallas LCD 16×2, edificios de 4 y 3 pisos, tres casas y árboles de esponja. La iluminación pasa por día, tarde, noche y amanecer en un ciclo de un minuto.</figcaption>
+        </figure><p>El flujo del proyecto es ESP32 → MQTT → Node-RED → SQL Server → limpieza → SSIS → Data Warehouse. Esta página consulta únicamente los agregados publicados en la base de datos en la nube (Supabase); no conecta el navegador a SQL Server ni expone registros individuales. El servicio de alertas por correo fue reactivado y la incidencia de permisos está resuelta.</p>
       </section>
 
       <section class="section" id="datos">
