@@ -964,7 +964,7 @@
     document.getElementById("exploration-period").textContent = `Período: ${date(data.primera_medicion)} a ${date(data.ultima_medicion)} · ${whole.format(Number(data.mediciones_total))} mediciones · solar: ${day(totals.solar_inicio)} a ${day(totals.solar_fin)} · eólica: ${day(totals.eolica_inicio)} a ${day(totals.eolica_fin)} · los gráficos omiten grupos con menos de 10 registros.`;
     const calculated = new Date(data.calculado_en);
     status.textContent = Number.isFinite(calculated.getTime())
-      ? `Datos agregados por la base de datos: ${calculated.toLocaleString("es-CO", { timeZone: "America/Bogota" })}. La caché se actualiza cada 5 minutos.`
+      ? `Datos agregados por la base de datos: ${calculated.toLocaleString("es-CO", { timeZone: "America/Bogota" })} se actualiza cada 5 minutos.`
       : "Hora de cálculo no disponible; la caché se actualiza cada 5 minutos.";
   }
 
