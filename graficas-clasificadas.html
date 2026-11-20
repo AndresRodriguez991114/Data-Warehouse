@@ -16,7 +16,7 @@
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="topbar">
-    <a class="brand" href="index.html" aria-label="Energía para el pueblo, inicio"><img class="brand-mark" src="Logo.png" alt=""><span>ENERGÍA <span class="brand-light">/</span> COMUNIDAD</span></a>
+    <a class="brand" href="index.html" aria-label="Energía / Comunidad, inicio"><img class="brand-mark" src="Logo.png" alt=""><span>ENERGÍA <span class="brand-light">/</span> COMUNIDAD</span></a>
     <span class="topbar-tag">ANÁLISIS DE GRÁFICAS CLASIFICADAS</span>
   </header>
   <div class="layout" id="inicio">
@@ -41,11 +41,11 @@
           <p>Las gráficas se organizan según la forma en que presentan y organizan los datos para facilitar el análisis.</p>
         </div>
         
-        <div id="exploration-status" role="status" style="padding: 12px; background: #e6f0dc; border-radius: 4px; border-left: 3px solid #176d52; margin-bottom: 24px;">
+        <div id="exploration-status" class="status-box" role="status">
           Cargando gráficas...
         </div>
 
-        <p id="exploration-period" style="color: #6b7479; font-size: 13px; margin-bottom: 24px;">
+        <p id="exploration-period" class="period-note">
           Período: sin datos · sin filtros generales
         </p>
 
@@ -59,7 +59,7 @@
           <div id="exploration-charts" aria-label="Gráficas clasificadas por tipo"></div>
 
           <!-- Gráfica combinada interactiva -->
-          <div class="chart-category" id="combined-section" style="margin-top: 48px; padding-top: 32px; border-top: 2px solid var(--ink);">
+          <div class="chart-category chart-category--combined" id="combined-section">
             <div class="category-header">
               <h3>Energía por clima y franja</h3>
               <p>Generación solar, generación eólica y consumo promedio para el mes seleccionado (o todo el período).</p>

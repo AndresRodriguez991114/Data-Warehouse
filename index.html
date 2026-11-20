@@ -18,7 +18,7 @@
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="topbar">
-    <a class="brand" href="#inicio" aria-label="Energía para el pueblo, inicio"><img class="brand-mark" src="Logo.png" alt=""><span>ENERGÍA <span class="brand-light">/</span> COMUNIDAD</span></a>
+    <a class="brand" href="#inicio" aria-label="Energía / Comunidad, inicio"><img class="brand-mark" src="Logo.png" alt=""><span>ENERGÍA <span class="brand-light">/</span> COMUNIDAD</span></a>
     <span class="topbar-tag">PROYECTO DE GESTIÓN DEL CONOCIMIENTO</span>
   </header>
   <div class="layout" id="inicio">
@@ -36,23 +36,23 @@
       <div class="sidebar-note"><span class="status-dot"></span> DOCUMENTACIÓN DEL PGC<br><strong>Energía solar comunitaria</strong></div>
     </aside>
     <main id="contenido">
-      <section class="intro section" id="proyecto">
+      <section class="intro section" id="portada">
         <div class="hero-topline"><div class="eyebrow"><span class="eyebrow-line"></span> CASA INTELIGENTE / CAJICÁ</div><span class="hero-edition">ENERGÍA SOLAR COMUNITARIA <span>·</span> 01</span></div>
         <figure class="intro-image"><img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&amp;fit=crop&amp;w=1800&amp;q=85" alt="Paneles solares bajo el sol en un paisaje abierto"><div class="hero-copy"><span class="hero-kicker">GENERACIÓN + CONSUMO</span><h1 id="project-title">Energía<br><span>sostenible</span></h1><p class="intro-copy">Una vivienda inteligente en Cajicá. El sol, los datos y las decisiones en una misma historia.</p></div><div class="hero-stamp"><span>PROYECTO</span><strong>CASA 01</strong><span>2026 / COLOMBIA</span></div><figcaption>Fotografía de paneles solares · Unsplash</figcaption></figure>
         <div class="intro-meta"><div><span>ENFOQUE</span><strong>Generación + consumo</strong></div><div><span>CONTEXTO</span><strong>Maqueta de vivienda / Cajicá</strong></div><div><span>ESTADO</span><strong>En análisis y documentación</strong></div></div>
       </section>
 
-      <section class="section" aria-labelledby="context-title">
-        <div class="section-heading"><div><span class="section-number">01 / CONTEXTO</span><h2 id="context-title">El proyecto</h2></div><p></p></div>
+      <section class="section" id="proyecto" aria-labelledby="context-title">
+        <div class="section-heading"><div><span class="section-number">01 / CONTEXTO</span><h2 id="context-title">El proyecto</h2></div></div>
         <div class="content-grid"><article><h3>Planteamiento del problema</h3><p>Para gestionar el uso de energía solar se necesita observar cuándo se genera y consume energía. El proyecto aborda esta necesidad mediante la Casa 1, una maqueta de vivienda inteligente ubicada en Cajicá, que permite medir el comportamiento de un panel, una batería y una carga representativa.</p></article><article><h3>Justificación</h3><p>El prototipo ofrece al equipo una forma de estudiar la relación entre generación y consumo y explorar decisiones de gestión energética. Sin datos organizados no se pueden ver los patrones de uso ni cuánto aporta la energía solar. Un flujo de datos confiable (ESP32 → MQTT → Node-RED → SQL Server → ETL → Data Warehouse → Power BI) permite pasar de lecturas sueltas a decisiones sustentadas.</p></article></div>
-        <div class="fact-strip" id="identificacion"></div>  
+        <div class="fact-strip" id="identificacion"></div>
         <div class="objective"><span class="section-number">OBJETIVO GENERAL</span><p>Implementar una solución de almacenamiento y preparación de datos para el módulo de ciudad inteligente mediante un modelo relacional, la simulación de mediciones, un modelo multidimensional y un proceso ETL en SSIS.</p></div>
         <h3>Objetivos específicos</h3><ol class="objectives"><li>Diseñar un modelo relacional para dispositivos, ubicaciones, mediciones y eventos.</li><li>Simular mediciones con un comportamiento coherente con la maqueta.</li><li>Diseñar un esquema multidimensional y un ETL con validaciones.</li><li>Verificar la consistencia de los datos y analizar la eficiencia energética.</li></ol>
       </section>
 
       <section class="section" id="metodologia">
         <div class="section-heading"><div><span class="section-number">02 / PROCESO</span><h2>De la pregunta a la decisión</h2></div></div>
-        <div class="steps"><div><span>01</span><strong>Comprensión del negocio</strong><p>Definir el monitoreo de generación y consumo</p></div><div><span>02</span><strong>Comprensión de los datos</strong><p>Combinar telemetría del ESP32-S3 con mediciones simuladas.</p></div><div><span>03</span><strong>Preparación</strong><p>Transformar los registros y controlar su calidad.</p></div><div><span>04</span><strong>Modelado</strong><p>Organizar las mediciones en un modelo dimensional.</p></div><div><span>05</span><strong>Evaluación</strong><p>Conciliar los conteos y comprobar la repetición de la carga.</p></div><div><span>06</span><strong>Despliegue</strong><p>Consultar agregados de la base de datos y apoyar decisiones con gráficas actualizadas.</p></div></div>
+        <div class="steps"><div><span>01</span><strong>Comprensión del negocio</strong><p>Definir el monitoreo de generación y consumo.</p></div><div><span>02</span><strong>Comprensión de los datos</strong><p>Combinar telemetría del ESP32-S3 con mediciones simuladas.</p></div><div><span>03</span><strong>Preparación</strong><p>Transformar los registros y controlar su calidad.</p></div><div><span>04</span><strong>Modelado</strong><p>Organizar las mediciones en un modelo dimensional.</p></div><div><span>05</span><strong>Evaluación</strong><p>Conciliar los conteos y comprobar la repetición de la carga.</p></div><div><span>06</span><strong>Despliegue</strong><p>Consultar agregados de la base de datos y apoyar decisiones con gráficas actualizadas.</p></div></div>
         <p>El alcance temporal y los conteos mostrados en el dashboard se leen de la base de datos al cargar la página. La maqueta física corresponde a un único ESP32-S3; el número de dispositivos y ubicaciones de la base describe los registros disponibles, no la cantidad de prototipos físicos.</p>
         <h3>Desarrollo de la solución</h3><p>La maqueta utiliza un ESP32-S3 para medir voltaje y corriente del panel solar y de la batería cada dos segundos. En las pruebas se observaron voltajes de panel entre 1,68 y 2,26 V, y de batería entre 3,72 y 3,85 V. La batería es de litio; una tira LED representa la carga.</p>
         <figure class="maqueta-figure" aria-labelledby="maqueta-titulo">
@@ -62,8 +62,8 @@
             <span class="maqueta-hint">Arrastra para girar</span>
             <div class="maqueta-progreso" aria-hidden="true"><span></span></div>
           </div>
-          <figcaption>Dos aerogeneradores, dos paneles solares, consola con dos pantallas LCD 16×2, edificios de 4 y 3 pisos, tres casas y árboles de esponja. La iluminación pasa por día, tarde, noche y amanecer en un ciclo de un minuto.</figcaption>
-        </figure><p>El flujo del proyecto es ESP32 → MQTT → Node-RED → SQL Server → limpieza → SSIS → Data Warehouse. Esta página consulta únicamente los agregados publicados en la base de datos en la nube (Supabase); no conecta el navegador a SQL Server ni expone registros individuales. El servicio de alertas por correo fue reactivado y la incidencia de permisos está resuelta.</p>
+          <figcaption>Dos aerogeneradores, dos paneles solares, consola con dos pantallas LCD 16×2, edificios de 4 y 3 pisos, tres casas y árboles de esponja. La iluminación pasa por día, tarde, noche y amanecer en un ciclo de diez segundos.</figcaption>
+        </figure><p>El flujo del proyecto es ESP32 → MQTT → Node-RED → SQL Server → limpieza → SSIS → Data Warehouse.</p>
       </section>
 
       <section class="section" id="datos">
@@ -82,10 +82,13 @@
 
         <h3>02 · Período y volumen</h3>
         <table class="data-table">
-          <tr>
-            <td><strong>Indicador</strong></td>
-            <td><strong>Valor</strong></td>
-          </tr>
+          <thead>
+            <tr>
+              <th scope="col">Indicador</th>
+              <th scope="col">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
           <tr>
             <td>Inicio del período</td>
             <td>13 de octubre de 2026</td>
@@ -114,38 +117,35 @@
             <td>Filas agregadas en el DW</td>
             <td>249.956</td>
           </tr>
+          </tbody>
         </table>
         <p>Cada fila del DW resume unas 4 mediciones por hora (1.003.209 / 249.956 ≈ 4,01).</p>
 
         <h3>03 · Comparativos</h3>
-        <p>Conteos en cada etapa del flujo, para comprobar que no se pierde información:</p>
+        <p>Conteos en cada etapa del ETL, para comprobar que no se pierde información. La carga no pierde registros: agrupa las mediciones por dispositivo y hora, por lo que una fila del DW resume unas 4 mediciones.</p>
         <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Etapa del ETL</th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
           <tr>
-            <td><strong>Etapa</strong></td>
-            <td><strong>Total</strong></td>
+            <td>1. Extraídos de <code>Medicion</code></td>
+            <td>1.003.209 mediciones</td>
           </tr>
           <tr>
-            <td>1. Telemetria_Real (crudo ESP32)</td>
-            <td>3.255</td>
-          </tr>
-          <tr>
-            <td>2. Extraídos de Medicion</td>
-            <td>1.003.209</td>
-          </tr>
-          <tr>
-            <td>3. Cargados en Fact_Mediciones</td>
-            <td>249.956</td>
-          </tr>
-          <tr>
-            <td>4. Rechazados</td>
+            <td>2. Rechazados (<code>Rechazados_ETL</code>)</td>
             <td>0</td>
           </tr>
           <tr>
-            <td>5. Alertas generadas</td>
-            <td>19</td>
+            <td>3. Cargados en <code>Fact_Mediciones</code></td>
+            <td>249.956 filas horarias (≈ 1.003.209 mediciones agregadas)</td>
           </tr>
+          </tbody>
         </table>
-        <p>Además, <code>Dim_Dispositivo</code> y <code>Dim_Ubicacion</code> tienen 354 filas cada una, igual que el número de ubicaciones. Los conteos se verificaron con consultas en SQL Server Management Studio.</p>
+        <p>Fuera del ETL, <code>Telemetria_Real</code> guarda 3.255 lecturas crudas del ESP32 y la tabla <code>Alerta</code> registra 19 alertas generadas. Además, <code>Dim_Dispositivo</code> y <code>Dim_Ubicacion</code> tienen 354 filas cada una, igual que el número de ubicaciones. Los conteos se verificaron con consultas en SQL Server Management Studio.</p>
 
         <h3>04 · Actualización</h3>
         <ul>
@@ -157,13 +157,13 @@
         </ul>
 
         <h3>05 · Datos del dashboard</h3>
-        <p>Las tablas anteriores corresponden al Data Warehouse en SQL Server. El dashboard no se conecta a SQL Server: lee una copia publicada en la base de datos en la nube, con la tabla de hechos unificada <code>fact_medicion_energia</code> (mediciones solares y eólicas: irradiancia, energía generada por el panel, velocidad y dirección del viento, potencia y energía eólica, consumo y batería) y las dimensiones de condición climática (<code>dim_clima</code>), franja del día (<code>dim_hora</code>) y ubicación (<code>dim_ubicacion</code>). Por eso los conteos del dashboard pueden diferir de los de esta sección según la fecha de la última publicación.</p>
+        <p>Las tablas anteriores corresponden al Data Warehouse en SQL Server. El dashboard no se conecta a SQL Server: lee una copia publicada en Supabase, con la tabla de hechos unificada <code>fact_medicion_energia</code> (mediciones solares y eólicas: irradiancia, energía generada por el panel, velocidad y dirección del viento, potencia y energía eólica, consumo y batería) y las dimensiones de condición climática (<code>dim_clima</code>), franja del día (<code>dim_hora</code>) y ubicación (<code>dim_ubicacion</code>). Por eso los conteos del dashboard pueden diferir de los de esta sección según la fecha de la última publicación.</p>
       </section>
 
       <section class="section dashboard-section" id="dashboard">
-        <div class="section-heading"><div><span class="section-number">04 / EXPLORACIÓN</span><h2>Dashboard de energía</h2></div><p></p></div>
+        <div class="section-heading"><div><span class="section-number">04 / EXPLORACIÓN</span><h2>Dashboard de energía</h2></div></div>
         <div id="featured-charts-container" aria-label="Gráficas destacadas principales"></div>
-        <h3>Comparativos y retroalimentación desde la base de datos</h3>
+        <h3>Comparativos y retroalimentación con datos agregados</h3>
         <p id="exploration-status" role="status"></p>
         <div class="metrics" aria-label="Indicadores agregados de la base de datos">
           <div><strong id="metric-mediciones">Cargando…</strong><span>mediciones</span></div>
@@ -194,19 +194,19 @@
       </section>
 
       <section class="section" id="hallazgos">
-        <div class="section-heading"><div><span class="section-number">05 / CONOCIMIENTO</span><h2>Lo que nos dicen los datos</h2></div><p></p></div>
+        <div class="section-heading"><div><span class="section-number">05 / CONOCIMIENTO</span><h2>Lo que nos dicen los datos</h2></div></div>
         <p>Los hallazgos se recalculan con los agregados del dashboard en cada actualización y leen juntas la energía solar y la eólica: qué parte del consumo cubren entre las dos, en qué horas la eólica compensa la falta de sol, cómo responde cada fuente al clima y dónde se concentra la demanda.</p>
         <div id="knowledge-list" class="knowledge-list"></div>
       </section>
 
       <section class="section" id="decisiones">
-        <div class="section-heading"><div><span class="section-number">06 / ACCIÓN</span><h2>Decisiones sustentadas</h2></div><p></p></div>
+        <div class="section-heading"><div><span class="section-number">06 / ACCIÓN</span><h2>Decisiones sustentadas</h2></div></div>
         <div id="decision-list" class="decision-grid"></div>
       </section>
 
       <section class="section" id="cierre">
-        <div class="section-heading"><div><span class="section-number">07 / CIERRE</span><h2>Conclusiones y fuentes</h2></div><p></p></div>
-        <div class="content-grid"><article><h3>Conclusiones técnicas</h3><p>El sitio consulta una función de la base de datos que entrega una caché de estadísticas y agregados; no consulta SQL Server ni descarga filas individuales al navegador. El refresco automático requiere que se ejecute el script de Cron de la base de datos indicado en la guía de despliegue.</p><p>Las comparaciones y sugerencias se recalculan a partir de los datos agregados actuales. Son descriptivas y deben revisarse junto con la cobertura, el período y el número de mediciones de cada grupo; no demuestran causalidad ni representan por sí solas el desempeño de una vivienda real.</p></article><article><h3>Fuente de datos</h3><p>Base de datos del proyecto, mediante las funciones públicas de solo lectura y sus cachés agregadas. No se publican credenciales secretas, direcciones ni registros individuales.</p><p>La página del proyecto está disponible en <a href="https://energia-sostenible-datawarehouse.vercel.app/">Energía sostenible</a>.</p></article></div>
+        <div class="section-heading"><div><span class="section-number">07 / CIERRE</span><h2>Conclusiones y fuentes</h2></div></div>
+        <div class="content-grid"><article><h3>Conclusiones técnicas</h3><p>El flujo de datos conecta el prototipo físico, el Data Warehouse y un dashboard público que trabaja solo con resúmenes agregados, sin exponer registros individuales.</p><p>Las comparaciones y sugerencias se recalculan a partir de los datos agregados actuales. Son descriptivas y deben revisarse junto con la cobertura, el período y el número de mediciones de cada grupo; no demuestran causalidad ni representan por sí solas el desempeño de una vivienda real.</p></article><article><h3>Fuente de datos</h3><p>Las cifras del dashboard provienen de la copia del Data Warehouse publicada en Supabase, construida a partir de las lecturas del prototipo ESP32-S3 y de las mediciones simuladas descritas en la sección 03. La página solo usa la clave pública de Supabase para llamar funciones de solo lectura que devuelven resúmenes agregados; no recibe registros individuales ni datos que identifiquen viviendas.</p></article></div>
       </section>
       <footer><span>ENERGÍA / COMUNIDAD</span><span>Proyecto de gestión del conocimiento · Ciudad inteligente</span><a href="#inicio">Volver arriba ↑</a></footer>
     </main>

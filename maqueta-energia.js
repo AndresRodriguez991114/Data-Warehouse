@@ -2,7 +2,7 @@
  * Maqueta 3D del módulo "Energía renovable" de la ciudad inteligente.
  * Escena independiente con Three.js r128: aerogeneradores en movimiento,
  * dos paneles solares, consola LCD, edificios de 4 y 3 pisos, tres casas a dos aguas y árboles.
- * La iluminación recorre un ciclo día → tarde → noche → amanecer cada minuto
+ * La iluminación recorre un ciclo día → tarde → noche → amanecer cada diez segundos
  * y la cámara gira lentamente alrededor del módulo.
  */
 (function () {
