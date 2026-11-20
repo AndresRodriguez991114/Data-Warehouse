@@ -113,20 +113,25 @@ test("la página presenta gráficas y decisiones desde Base de datos y sondea ca
     const reducedCharts = await page.evaluate(() => window.__charts);
     assert.ok(reducedCharts.every(chart => chart.options.animation === false));
     const climate = reducedCharts.find(chart => chart.data.labels.includes("Soleado") && chart.data.labels.length === 2);
-    assert.deepEqual(climate.data.datasets.map(dataset => [dataset.label, dataset.borderColor]), [["Solar", "#176d52"], ["Eólica", "#5479b7"]]);
+    assert.deepEqual(climate.data.datasets.map(dataset => [dataset.label, dataset.borderColor]), [["Solar", "#0a7550"], ["Eólica", "#4a80d8"]]);
     assert.deepEqual(climate.data.datasets[0].data, [150 / 21, 12]);
     assert.deepEqual(climate.data.datasets[1].data, [14.5, 5]);
     const profile = reducedCharts[0];
     assert.deepEqual(profile.data.labels, ["00:00", "12:00"]);
     assert.deepEqual(profile.data.datasets.map(dataset => dataset.label), ["Solar", "Eólica", "Consumo"]);
-    const mix = reducedCharts.find(chart => chart.type === "doughnut");
-    assert.deepEqual(mix.data.datasets[0].data, [300, 150]);
+    // La mezcla de dos fuentes es una barra segmentada, no una dona.
+    assert.ok(reducedCharts.every(chart => chart.type !== "doughnut"));
+    assert.match(await page.locator("#grafica-mezcla .share-bar").getAttribute("aria-label"), /Solar: 66,67 %.*Eólica: 33,33 %/);
+    assert.match(await page.locator("#grafica-energia-hora .chart-insight").innerText(), /supera a la solar en 1 de 24 horas/);
+    assert.match(await page.locator("#grafica-generacion-clima .chart-insight").innerText(), /solar rinde más con «Soleado»/);
     const monthly = reducedCharts.find(chart => chart.type === "line" && chart.data.labels.length === 2 && chart.data.labels[0] !== "00:00");
     assert.deepEqual(monthly.data.datasets[0].data, [10, null]);
     assert.deepEqual(monthly.data.datasets[1].data, [12, 10]);
-    assert.ok(reducedCharts.some(chart => chart.data.labels.includes("400–500 W/m²")));
-    assert.ok(reducedCharts.some(chart => chart.data.labels.includes("6–7 m/s")));
-    const location = reducedCharts.find(chart => chart.data.labels.includes("2"));
+    assert.ok(reducedCharts.some(chart => chart.data.labels.includes("400") && chart.options.scales.x.title.text === "Irradiancia (W/m²)"));
+    assert.ok(reducedCharts.some(chart => chart.data.labels.includes("6") && chart.options.scales.x.title.text === "Velocidad del viento (m/s)"));
+    assert.match(await page.locator("#grafica-solar-irradiancia table").textContent(), /400–500 W\/m²/);
+    assert.equal(reducedCharts[0].plugins[0].id, "franjasNocturnas");
+    const location = reducedCharts.find(chart => chart.data.labels.includes("Estrato 2"));
     assert.deepEqual(location.data.datasets[0].data, [18, 315 / 26]);
     assert.doesNotMatch(await page.locator("main").innerText(), /SQL Server verificados en SSMS|CAPTURA ESTÁTICA \/ POWER BI/i);
     for (const width of [1440, 390]) {
@@ -142,7 +147,7 @@ test("la página presenta gráficas y decisiones desde Base de datos y sondea ca
     await page.reload();
     await page.locator("#knowledge-list details").first().waitFor({ state: "visible" });
     const animation = await page.evaluate(() => window.__charts[0].options.animation);
-    assert.equal(animation.duration, 900);
+    assert.equal(animation.duration, 700);
     assert.equal(animation.easing, "easeOutQuart");
     await page.locator("#exploration-charts .exploration-chart").first().scrollIntoViewIfNeeded();
     await page.waitForFunction(() => window.__replays > 0);

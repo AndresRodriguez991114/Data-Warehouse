@@ -59,4 +59,45 @@
 section#datos ul{padding-left:20px;color:#53665e}
 section#datos li{margin-bottom:8px;line-height:1.7}
 section#datos code{background:#f0f2f1;padding:2px 6px;border-radius:3px;font-family:monospace;color:#4a5a52;font-size:12px}
-section#datos strong{color:var(--ink);font-weight:700}
+section#datos strong{color:var(--ink);font-weight:700}/* Gráficas: tarjetas sobrias, conclusión destacada y marcas finas */
+.chart-category{margin:40px 0 8px}
+.category-header{display:grid;gap:4px;max-width:760px}
+.category-header h3{margin:0;font-family:var(--display);font-size:20px}
+.category-header p{margin:0;color:var(--muted);font-size:13px}
+.exploration-chart{border:1px solid #e3e8e5;border-top:1px solid #e3e8e5;border-radius:14px;padding:22px 22px 14px;box-shadow:0 1px 2px rgba(34,55,43,.04),0 8px 24px rgba(34,55,43,.05);transition:box-shadow .2s ease}
+.exploration-chart:hover{transform:none;box-shadow:0 1px 2px rgba(34,55,43,.05),0 14px 32px rgba(34,55,43,.09)}
+.exploration-chart--wide{grid-column:1/-1}
+.exploration-chart figcaption{min-height:0;display:grid;gap:6px;margin-bottom:14px}
+.exploration-chart h3{margin:0;font-family:var(--display);font-size:17px;line-height:1.3;color:var(--ink)}
+.exploration-chart figcaption p{margin:0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.exploration-chart figcaption .chart-insight{margin-top:4px;padding:9px 12px;border-left:3px solid var(--ink);border-radius:0 6px 6px 0;background:#f4f6f5;color:var(--ink);font-size:13px;font-weight:500}
+.chart-canvas{height:290px}
+.chart-canvas--tall{height:360px}
+.chart-data{margin-top:8px;border-top:1px solid #edf0ee}
+.chart-data summary{cursor:pointer;color:var(--muted);font-weight:600}
+.chart-data th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+.chart-data td{font-variant-numeric:tabular-nums}
+.share-bar{display:flex;gap:2px;height:28px;margin:30px 0 18px}
+.share-bar__part{display:flex;align-items:center;min-width:0;padding-left:10px;border-radius:4px;color:#fff;font-size:12px;font-weight:600;white-space:nowrap}
+.share-legend{display:grid;gap:10px;margin:0 0 18px;padding:0;list-style:none}
+.share-legend li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink)}
+.share-legend li span:last-child{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.share-legend__swatch{width:10px;height:10px;border-radius:3px;flex:none}
+.featured-metrics{grid-template-columns:1.3fr 1fr 1fr;gap:12px;padding:0;background:none;border-radius:0;margin:0 0 4px}
+.featured-metrics .metric-item{text-align:left;padding:18px 20px;background:#fff;border:1px solid #e3e8e5;border-radius:14px}
+.featured-metrics .metric-item--hero{background:var(--ink);border-color:var(--ink)}
+.featured-metrics .metric-item--hero .metric-label,.featured-metrics .metric-item--hero .metric-unit{color:#c9d0cc}
+.featured-metrics .metric-item--hero .metric-value{color:#fff;font-size:44px}
+.metric-label{display:flex;align-items:center;gap:6px;color:var(--muted);letter-spacing:.4px}
+.metric-key{width:10px;height:10px;border-radius:3px;flex:none}
+.metric-unit{font-size:11px;color:var(--muted)}
+@media(max-width:900px){.featured-metrics{grid-template-columns:1fr 1fr}.featured-metrics .metric-item--hero{grid-column:1/-1}}
+@media(max-width:700px){.featured-metrics{grid-template-columns:1fr}.chart-canvas{height:260px}.chart-canvas--tall{height:300px}.exploration-chart{padding:18px 16px 12px}}
+@media(prefers-reduced-motion:reduce){.exploration-chart{transition:none}}
+.coverage{display:grid;gap:10px;margin:4px 0 18px;padding-top:16px;border-top:1px solid #edf0ee}
+.coverage__title{margin:0 0 2px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.coverage__row{display:grid;grid-template-columns:minmax(90px,auto) minmax(0,1fr) 64px;align-items:center;gap:12px;font-size:13px}
+.coverage__label{color:var(--ink)}
+.coverage__track{height:8px;border-radius:999px;overflow:hidden}
+.coverage__fill{height:100%;border-radius:999px}
+.coverage__value{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}

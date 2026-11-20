@@ -41,7 +41,8 @@
   const number = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
   const whole = new Intl.NumberFormat("es-CO");
   // Un color fijo por fuente o variable en todo el dashboard.
-  const COLORS = { solar: "#176d52", eolica: "#5479b7", consumo: "#ca6d39" };
+  // Paleta validada para daltonismo (ΔE CVD ≥ 15 entre todos los pares); el naranja se apoya en leyenda y tabla.
+  const COLORS = { solar: "#0a7550", eolica: "#4a80d8", consumo: "#e98a3a" };
   const SOURCES = {
     solar: { label: "Solar", variable: "generacion", color: COLORS.solar },
     eolica: { label: "Eólica", variable: "eolica", color: COLORS.eolica },
@@ -92,14 +93,19 @@
   }
 
   // Promedio por medición de cada fuente, alineado por categoría.
-  function sourceSeries(groups, key, sourceKeys, format) {
+  function sourceSeries(groups, key, sourceKeys, format, longFormat) {
     return sourceKeys.map(sourceKey => {
       const source = SOURCES[sourceKey];
-      const rows = api.groupAverage(groups, key, source.variable).map(row => ({ ...row, label: format ? format(row.label) : row.label }));
+      const rows = api.groupAverage(groups, key, source.variable).map(row => ({
+        ...row,
+        label: format ? format(row.label) : row.label,
+        range: longFormat ? longFormat(row.label) : undefined
+      }));
       return { label: source.label, color: source.color, rows };
     });
   }
 
+  // Intervalos del recurso: etiqueta corta para el eje y rango completo para tooltip y tabla.
   function resourceRows(data, variable) {
     const rows = data.recurso.filter(item => item.variable === variable);
     const irradiance = variable === "irradiancia";
@@ -108,9 +114,12 @@
       const bucket = Number(row.label);
       if (!Number.isInteger(bucket) || bucket < 0) throw new Error("Agregado de recurso inválido");
       const label = irradiance
+        ? (bucket >= last ? "≥ 1.200" : whole.format(bucket * 100))
+        : (bucket >= last ? "≥ 20" : String(bucket));
+      const range = irradiance
         ? (bucket >= last ? "≥ 1.200 W/m²" : `${whole.format(bucket * 100)}–${whole.format(bucket * 100 + 100)} W/m²`)
         : (bucket >= last ? "≥ 20 m/s" : `${bucket}–${bucket + 1} m/s`);
-      return { ...row, label };
+      return { ...row, label, range };
     });
   }
 
@@ -138,26 +147,90 @@
     };
   }
 
-  // Dibuja una gráfica con una o varias series que comparten categorías.
-  function draw(container, spec) {
-    const { title, description, series, type, unit, id } = spec;
-    const labels = [];
-    series.forEach(item => item.rows.forEach(row => { if (!labels.includes(row.label)) labels.push(row.label); }));
-    const lookups = series.map(item => new Map(item.rows.map(row => [row.label, row])));
+  // ---- Conclusiones breves que acompañan a cada gráfica ----
+  const finite = rows => rows.filter(row => Number.isFinite(row.value));
+  const top = rows => finite(rows).sort((left, right) => right.value - left.value)[0] || null;
+  const bottom = rows => finite(rows).sort((left, right) => left.value - right.value)[0] || null;
+  const whValue = value => `${number.format(value)} Wh`;
 
-    const figure = document.createElement("figure");
-    figure.className = "exploration-chart";
-    figure.style.setProperty("--chart-accent", series[0].color);
-    if (id) figure.id = id;
-    const caption = document.createElement("figcaption");
-    caption.append(text("h3", title), text("p", description));
-    const wrapper = document.createElement("div");
-    wrapper.className = "chart-canvas";
-    const canvas = document.createElement("canvas");
-    canvas.setAttribute("role", "img");
-    canvas.setAttribute("aria-label", title);
-    wrapper.append(canvas);
+  function bestBySource(series) {
+    const parts = series.map(item => {
+      const best = top(item.rows);
+      return best ? `la ${item.label.toLowerCase()} rinde más con «${best.range || best.label}» (${whValue(best.value)})` : null;
+    }).filter(Boolean);
+    if (!parts.length) return null;
+    const sentence = parts.join("; ");
+    return `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`;
+  }
 
+  function periodInsight(series) {
+    const [solar, wind, consumption] = series;
+    const peak = top(consumption.rows);
+    if (!peak) return null;
+    const solarRow = solar.rows.find(row => row.label === peak.label);
+    const windRow = wind.rows.find(row => row.label === peak.label);
+    const values = [solarRow && Number.isFinite(solarRow.value) ? `${whValue(solarRow.value)} solares` : null, windRow && Number.isFinite(windRow.value) ? `${whValue(windRow.value)} eólicos` : null].filter(Boolean);
+    return `El consumo es mayor en «${peak.label}» (${whValue(peak.value)} por medición)${values.length ? `; ahí se generan ${values.join(" y ")}` : ""}.`;
+  }
+
+  function growthInsight(rows, resource) {
+    const valid = finite(rows);
+    if (valid.length < 2) return null;
+    const first = valid[0];
+    const best = top(valid);
+    if (best === first) return null;
+    return `La generación pasa de ${whValue(first.value)} con ${first.range} a ${whValue(best.value)} con ${best.range} de ${resource}.`;
+  }
+
+  function spreadInsight(rows, noun) {
+    const high = top(rows);
+    const low = bottom(rows);
+    if (!high || !low || high === low || low.value <= 0) return null;
+    return `«${high.label}» consume ${number.format((high.value / low.value - 1) * 100)} % más por medición que «${low.label}»; la comparación es por medición, no por ${noun}.`;
+  }
+
+  // ---- Estilo común de las gráficas ----
+  const INK = "#282d30";
+  const MUTED = "#6b7479";
+  const GRID = "#e9edeb";
+  const compact = new Intl.NumberFormat("es-CO", { notation: "compact", maximumFractionDigits: 1 });
+  const tickNumber = value => Math.abs(value) >= 10000 ? compact.format(value) : number.format(value);
+
+  function applyChartDefaults() {
+    if (!ChartClass || !ChartClass.defaults) return;
+    ChartClass.defaults.font.family = '"DM Sans", system-ui, sans-serif';
+    ChartClass.defaults.font.size = 12;
+    ChartClass.defaults.color = MUTED;
+    ChartClass.defaults.borderColor = GRID;
+  }
+
+  // Sombrea las horas sin sol (18:00–05:59) para leer el perfil horario de un vistazo.
+  const nightBands = {
+    id: "franjasNocturnas",
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      const labels = chart.data.labels;
+      if (!scales.x || labels.length < 2) return;
+      const step = scales.x.getPixelForValue(1) - scales.x.getPixelForValue(0);
+      ctx.save();
+      ctx.fillStyle = "rgba(40, 45, 48, 0.05)";
+      labels.forEach((label, index) => {
+        const hour = parseInt(label, 10);
+        if (!(hour < 6 || hour >= 18)) return;
+        const center = scales.x.getPixelForValue(index);
+        const left = Math.max(chartArea.left, center - step / 2);
+        const right = Math.min(chartArea.right, center + step / 2);
+        ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
+      });
+      ctx.fillStyle = MUTED;
+      ctx.font = '600 11px "DM Sans", system-ui, sans-serif';
+      ctx.textBaseline = "top";
+      ctx.fillText("Noche", chartArea.left + 6, chartArea.top + 6);
+      ctx.restore();
+    }
+  };
+
+  function buildTable(labels, series, lookups, unit) {
     const details = document.createElement("details");
     details.className = "chart-data";
     details.append(text("summary", "Ver datos de la gráfica"));
@@ -175,7 +248,8 @@
     const body = document.createElement("tbody");
     labels.forEach(label => {
       const line = document.createElement("tr");
-      line.append(text("td", label));
+      const first = lookups.map(lookup => lookup.get(label)).find(Boolean);
+      line.append(text("td", first && first.range ? first.range : label));
       lookups.forEach(lookup => {
         const row = lookup.get(label);
         line.append(
@@ -192,51 +266,155 @@
     table.append(head, body);
     scroll.append(table);
     details.append(scroll);
-    figure.append(caption, wrapper, details);
+    return details;
+  }
+
+  function buildFigure(spec) {
+    const figure = document.createElement("figure");
+    figure.className = "exploration-chart";
+    if (spec.wide) figure.classList.add("exploration-chart--wide");
+    if (spec.id) figure.id = spec.id;
+    const caption = document.createElement("figcaption");
+    caption.append(text("h3", spec.title), text("p", spec.description));
+    if (spec.insight) caption.append(text("p", spec.insight, "chart-insight"));
+    figure.append(caption);
+    return figure;
+  }
+
+  // Dibuja una gráfica con una o varias series que comparten categorías.
+  function draw(container, spec) {
+    const { title, series, type, unit } = spec;
+    const labels = [];
+    series.forEach(item => item.rows.forEach(row => { if (!labels.includes(row.label)) labels.push(row.label); }));
+    const lookups = series.map(item => new Map(item.rows.map(row => [row.label, row])));
+    const multiple = series.length > 1;
+    const horizontal = Boolean(spec.horizontal);
+    const line = type === "line";
+    const shortUnit = spec.shortUnit || "Wh";
+
+    const figure = buildFigure(spec);
+    const wrapper = document.createElement("div");
+    wrapper.className = "chart-canvas";
+    // Las barras horizontales crecen con el número de categorías para no apretar las etiquetas.
+    if (horizontal) wrapper.style.height = `${Math.max(240, labels.length * (multiple ? 14 * series.length + 12 : 34) + 80)}px`;
+    if (spec.tall) wrapper.classList.add("chart-canvas--tall");
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("role", "img");
+    canvas.setAttribute("aria-label", `${title}. ${spec.insight || spec.description}`);
+    wrapper.append(canvas);
+    figure.append(wrapper, buildTable(labels, series, lookups, unit));
     container.append(figure);
 
-    const circular = type === "doughnut";
+    const fewPoints = labels.length <= 12;
     const datasets = series.map((item, index) => ({
       label: item.label,
       data: labels.map(label => {
         const row = lookups[index].get(label);
         return row && Number.isFinite(row.value) ? row.value : null;
       }),
-      backgroundColor: circular ? spec.sliceColors : (type === "line" ? `${item.color}26` : item.color),
-      borderColor: circular ? "#fff" : item.color,
-      borderWidth: 2,
-      borderRadius: type === "bar" ? 6 : 0,
-      pointRadius: 3,
-      pointHoverRadius: 6,
-      tension: 0.3,
+      backgroundColor: line ? `${item.color}1a` : item.color,
+      borderColor: item.color,
+      borderWidth: line ? 2 : 0,
+      borderRadius: line ? 0 : 4,
+      borderSkipped: "start",
+      maxBarThickness: 24,
+      categoryPercentage: multiple ? (horizontal ? 0.82 : 0.72) : 0.8,
+      barPercentage: 0.9,
+      fill: line && !multiple ? "origin" : false,
+      cubicInterpolationMode: "monotone",
+      borderCapStyle: "round",
+      borderJoinStyle: "round",
+      pointRadius: line && fewPoints ? 4 : 0,
+      pointBackgroundColor: item.color,
+      pointBorderColor: "#fff",
+      pointBorderWidth: 2,
+      pointHoverRadius: 5,
+      pointHoverBorderWidth: 2,
+      pointHitRadius: 12,
       spanGaps: false
     }));
+
+    const valueAxis = {
+      beginAtZero: true,
+      border: { display: false },
+      grid: { color: GRID, drawTicks: false },
+      ticks: { padding: 8, color: MUTED, callback: value => tickNumber(value), maxTicksLimit: 6 },
+      title: { display: true, text: unit, color: MUTED, font: { size: 11 } }
+    };
+    const categoryAxis = {
+      border: { color: "#c9d1cd" },
+      grid: { display: false },
+      ticks: {
+        color: MUTED,
+        padding: 6,
+        maxRotation: 0,
+        autoSkip: line,
+        autoSkipPadding: 10,
+        callback(value) {
+          const label = this.getLabelForValue(value);
+          return !horizontal && typeof label === "string" && label.length > 11 ? label.split(" ") : label;
+        }
+      },
+      title: { display: Boolean(spec.xTitle), text: spec.xTitle || "", color: MUTED, font: { size: 11 } }
+    };
 
     const chart = new ChartClass(canvas, {
       type,
       data: { labels, datasets },
+      plugins: spec.nightBands ? [nightBands] : [],
       options: {
+        indexAxis: horizontal ? "y" : "x",
         responsive: true,
         maintainAspectRatio: false,
-        interaction: multiple ? { mode: "index", intersect: false } : undefined,
-        animation: reducedMotion.matches ? false : { duration: 900, easing: "easeOutQuart" },
+        layout: { padding: { top: 4, right: 8 } },
+        interaction: multiple || line ? { mode: "index", intersect: false, axis: horizontal ? "y" : "x" } : { mode: "nearest", intersect: false },
+        animation: reducedMotion.matches ? false : { duration: 700, easing: "easeOutQuart" },
         plugins: {
-          legend: { display: multiple || circular, position: "top", labels: { usePointStyle: true, padding: 14 } },
-          tooltip: { callbacks: { afterLabel: context => {
-            const row = lookups[context.datasetIndex].get(labels[context.dataIndex]);
-            if (!row) return "";
-            const parts = [];
-            if (Number.isFinite(row.count)) parts.push(`Mediciones: ${whole.format(row.count)}`);
-            if (Number.isFinite(row.percent)) parts.push(`${number.format(row.percent)} % del total`);
-            return parts.join(" · ");
-          } } }
+          legend: {
+            display: multiple,
+            position: "top",
+            align: "start",
+            labels: { color: INK, usePointStyle: true, pointStyle: line ? "circle" : "rectRounded", boxWidth: 10, boxHeight: 10, padding: 16, font: { size: 12, weight: "500" } }
+          },
+          tooltip: {
+            backgroundColor: "#fff",
+            titleColor: INK,
+            bodyColor: "#3d4549",
+            footerColor: MUTED,
+            borderColor: "#dfe3e2",
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            boxPadding: 4,
+            usePointStyle: true,
+            titleFont: { weight: "600" },
+            footerFont: { weight: "400", size: 11 },
+            callbacks: {
+              title: items => {
+                if (!items.length) return "";
+                const row = lookups[items[0].datasetIndex].get(labels[items[0].dataIndex]);
+                return row && row.range ? row.range : String(labels[items[0].dataIndex]);
+              },
+              label: context => {
+                const value = context.parsed[horizontal ? "x" : "y"];
+                return ` ${context.dataset.label}: ${Number.isFinite(value) ? `${number.format(value)} ${shortUnit}` : "sin datos"}`;
+              },
+              footer: items => {
+                const counts = items.map(item => lookups[item.datasetIndex].get(labels[item.dataIndex])).filter(row => row && Number.isFinite(row.count));
+                if (!counts.length) return "";
+                return multiple ? `Mediciones: ${counts.map(row => whole.format(row.count)).join(" / ")}` : `Mediciones: ${whole.format(counts[0].count)}`;
+              }
+            }
+          }
         },
-        scales: circular ? {} : {
-          y: { beginAtZero: true, title: { display: true, text: unit } },
-          x: { title: { display: Boolean(spec.xTitle), text: spec.xTitle || "" }, ticks: { maxRotation: 55, minRotation: 0 } }
-        }
+        scales: horizontal ? { x: valueAxis, y: categoryAxis } : { x: categoryAxis, y: valueAxis }
       }
     });
+    return withReplay(chart, figure);
+  }
+
+  // Repite la animación de entrada cuando la gráfica aparece en pantalla.
+  function withReplay(chart, figure) {
     if (reducedMotion.matches || !("IntersectionObserver" in window)) return chart;
     const observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) {
@@ -256,29 +434,93 @@
     };
   }
 
+  // Parte de un todo con dos fuentes: barra segmentada en lugar de una dona de dos porciones.
+  function drawShare(container, spec, shared) {
+    const figure = buildFigure(spec);
+    const parts = [
+      { label: "Solar", value: shared.solar, share: shared.solarShare, color: COLORS.solar },
+      { label: "Eólica", value: shared.wind, share: shared.windShare, color: COLORS.eolica }
+    ];
+    const bar = document.createElement("div");
+    bar.className = "share-bar";
+    bar.setAttribute("role", "img");
+    bar.setAttribute("aria-label", parts.map(part => `${part.label}: ${part.share === null ? "sin datos" : `${number.format(part.share)} %`} (${number.format(part.value)} Wh)`).join("; "));
+    parts.forEach(part => {
+      if (!(part.share > 0)) return;
+      const block = document.createElement("div");
+      block.className = "share-bar__part";
+      block.style.flexGrow = String(part.share);
+      block.style.background = part.color;
+      block.title = `${part.label}: ${number.format(part.share)} % · ${number.format(part.value)} Wh`;
+      if (part.share >= 12) block.append(text("span", `${Math.round(part.share)} %`));
+      bar.append(block);
+    });
+    const legend = document.createElement("ul");
+    legend.className = "share-legend";
+    parts.forEach(part => {
+      const item = document.createElement("li");
+      const swatch = text("span", "", "share-legend__swatch");
+      swatch.style.background = part.color;
+      item.append(swatch, text("strong", part.label), text("span", `${number.format(part.value)} Wh${part.share === null ? "" : ` · ${number.format(part.share)} %`}`));
+      legend.append(item);
+    });
+    // Qué parte del consumo cubre cada fuente: medidor con riel del mismo tono.
+    const coverage = document.createElement("div");
+    coverage.className = "coverage";
+    coverage.append(text("p", "Cobertura del consumo en el mismo período", "coverage__title"));
+    [["Solar", shared.solarCoverage, COLORS.solar], ["Eólica", shared.windCoverage, COLORS.eolica], ["Solar + eólica", shared.coverage, INK]].forEach(([label, value, color]) => {
+      const row = document.createElement("div");
+      row.className = "coverage__row";
+      const track = document.createElement("div");
+      track.className = "coverage__track";
+      track.style.background = `${color}1f`;
+      const fill = document.createElement("div");
+      fill.className = "coverage__fill";
+      fill.style.background = color;
+      fill.style.width = `${Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0))}%`;
+      track.append(fill);
+      row.append(text("span", label, "coverage__label"), track, text("span", Number.isFinite(value) ? `${number.format(value)} %` : "Sin datos", "coverage__value"));
+      coverage.append(row);
+    });
+    const rows = parts.map(part => ({ label: part.label, value: part.value, count: null, percent: part.share }));
+    const series = [{ label: "Generación", color: COLORS.solar, rows }];
+    figure.append(bar, legend, coverage, buildTable(rows.map(row => row.label), series, [new Map(rows.map(row => [row.label, row]))], "Wh generados"));
+    container.append(figure);
+    return null;
+  }
+
   function chartSpecs(data) {
     const shared = sharedPeriod(data);
     const sharedText = shared ? `${day(shared.start)} a ${day(shared.end)}` : null;
+    const climate = sourceSeries(data.grupos, "condicion", ["solar", "eolica"]);
+    const period = sourceSeries(data.grupos, "franja", ["solar", "eolica", "consumo"]);
+    const years = new Set(data.grupos.map(group => String(group.mes).slice(0, 4)));
+    const monthShort = value => {
+      const label = monthLabel(value, true).replace(/\./g, "").replace(/ de /, " ");
+      return years.size > 1 ? label : label.split(" ")[0];
+    };
+    const monthly = sourceSeries(data.grupos, "mes", ["solar", "eolica"], monthShort, value => monthLabel(value));
+    const irradiance = resourceRows(data, "irradiancia");
+    const wind = resourceRows(data, "viento");
+    // Un estrato numérico se lee mejor con su nombre: «Estrato 3» en lugar de «3».
+    const stratum = locationLabel(data) === "estrato";
+    const location = api.groupAverage(data.ubicaciones, "categoria", "consumo").map(row => ({ ...row, label: stratum && /^\d+$/.test(String(row.label)) ? `Estrato ${row.label}` : row.label }));
+    const monthsWith = item => finite(item.rows).length;
     return [
       {
         key: "complementariedad",
         category: "Solar y eólica",
         description: "Compara las dos fuentes con la misma unidad (Wh por medición) para ver cuándo una compensa a la otra. Solo se publican grupos con al menos 10 mediciones.",
         charts: [
-          { id: "grafica-generacion-clima", title: "Generación promedio por clima", description: "Wh por medición de cada fuente según la condición climática.", type: "bar", unit: "Wh por medición", series: sourceSeries(data.grupos, "condicion", ["solar", "eolica"]) },
-          { id: "grafica-energia-franja", title: "Generación y consumo por franja", description: "Wh por medición de cada fuente y del consumo en cada franja del día.", type: "bar", unit: "Wh por medición", series: sourceSeries(data.grupos, "franja", ["solar", "eolica", "consumo"]) },
-          { id: "grafica-generacion-mes", title: "Generación promedio por mes", description: "Wh por medición. Un mes sin línea indica que esa fuente no tiene mediciones en él.", type: "line", unit: "Wh por medición", series: sourceSeries(data.grupos, "mes", ["solar", "eolica"], value => monthLabel(value, true)) },
+          { id: "grafica-generacion-clima", title: "Generación promedio por clima", description: "Wh por medición de cada fuente según la condición climática.", insight: bestBySource(climate), type: "bar", unit: "Wh por medición", series: climate },
+          { id: "grafica-energia-franja", title: "Generación y consumo por franja", description: "Wh por medición de cada fuente y del consumo en cada franja del día.", insight: periodInsight(period), type: "bar", unit: "Wh por medición", series: period },
+          { id: "grafica-generacion-mes", title: "Generación promedio por mes", description: "Wh por medición. Un mes sin punto indica que esa fuente no tiene mediciones en él.", insight: `Hay datos solares en ${monthsWith(monthly[0])} meses y eólicos en ${monthsWith(monthly[1])}. ${bestBySource(monthly) || ""}`.trim(), type: "line", unit: "Wh por medición", series: monthly },
           shared ? {
             id: "grafica-mezcla",
+            share: true,
             title: "Mezcla de generación",
             description: `Participación de cada fuente en la energía generada entre ${sharedText}, el período con datos de ambas.`,
-            type: "doughnut",
-            unit: "Wh generados",
-            sliceColors: [COLORS.solar, COLORS.eolica],
-            series: [{ label: "Generación", color: COLORS.solar, rows: [
-              { label: "Solar", value: shared.solar, count: null, percent: shared.solarShare },
-              { label: "Eólica", value: shared.wind, count: null, percent: shared.windShare }
-            ] }]
+            insight: shared.solarShare === null ? null : `La ${shared.solarShare >= 50 ? "solar" : "eólica"} aporta la mayor parte: ${number.format(Math.max(shared.solarShare, shared.windShare))} % de la energía generada.`
           } : null
         ].filter(Boolean)
       },
@@ -287,8 +529,8 @@
         category: "Recurso y generación",
         description: "Relaciona cada fuente con el recurso que la produce: irradiancia para la solar y velocidad del viento para la eólica.",
         charts: [
-          { id: "grafica-solar-irradiancia", title: "Generación solar según irradiancia", description: "Wh por medición en intervalos de 100 W/m².", type: "bar", unit: "Wh por medición", xTitle: "Irradiancia", series: [{ label: "Solar", color: COLORS.solar, rows: resourceRows(data, "irradiancia") }] },
-          { id: "grafica-eolica-viento", title: "Generación eólica según velocidad del viento", description: "Wh por medición en intervalos de 1 m/s.", type: "bar", unit: "Wh por medición", xTitle: "Velocidad del viento", series: [{ label: "Eólica", color: COLORS.eolica, rows: resourceRows(data, "viento") }] }
+          { id: "grafica-solar-irradiancia", title: "Generación solar según irradiancia", description: "Wh por medición en intervalos de 100 W/m².", insight: growthInsight(irradiance, "irradiancia"), type: "bar", unit: "Wh por medición", xTitle: "Irradiancia (W/m²)", series: [{ label: "Solar", color: COLORS.solar, rows: irradiance }] },
+          { id: "grafica-eolica-viento", title: "Generación eólica según velocidad del viento", description: "Wh por medición en intervalos de 1 m/s.", insight: growthInsight(wind, "viento"), type: "bar", unit: "Wh por medición", xTitle: "Velocidad del viento (m/s)", series: [{ label: "Eólica", color: COLORS.eolica, rows: wind }] }
         ]
       },
       {
@@ -296,7 +538,7 @@
         category: "Consumo",
         description: "Demanda que deben cubrir las dos fuentes.",
         charts: [
-          { id: "grafica-consumo-ubicacion", title: `Consumo promedio por ${locationLabel(data)}`, description: "Promedio por medición, para comparar categorías con distinto número de viviendas. Usa estrato si está disponible; de lo contrario, barrio.", type: "bar", unit: "Wh por medición", series: [{ label: "Consumo", color: COLORS.consumo, rows: api.groupAverage(data.ubicaciones, "categoria", "consumo") }] }
+          { id: "grafica-consumo-ubicacion", wide: true, horizontal: true, title: `Consumo promedio por ${locationLabel(data)}`, description: "Promedio por medición, para comparar categorías con distinto número de viviendas. Usa estrato si está disponible; de lo contrario, barrio.", insight: spreadInsight(location, "vivienda"), type: "bar", unit: "Wh por medición", series: [{ label: "Consumo", color: COLORS.consumo, rows: location }] }
         ]
       }
     ];
@@ -320,10 +562,20 @@
       color: SOURCES[key].color,
       rows: api.combined(currentData.grupos, month, SOURCES[key].variable)
     }));
+    const renewable = series[0].rows.map(row => {
+      const windRow = series[1].rows.find(item => item.label === row.label);
+      const total = (Number.isFinite(row.value) ? row.value : 0) + (windRow && Number.isFinite(windRow.value) ? windRow.value : 0);
+      return { label: row.label, value: total };
+    });
+    series[1].rows.forEach(row => { if (!renewable.some(item => item.label === row.label) && Number.isFinite(row.value)) renewable.push({ label: row.label, value: row.value }); });
+    const best = top(renewable);
     combinedChart = draw(container, {
       id: "grafica-conjunto",
-      title: "Energía por clima y franja",
-      description: `Wh por medición · ${monthLabel(month)} · cada barra combina una condición climática y una franja del día.`,
+      wide: true,
+      horizontal: true,
+      title: `Solar, eólica y consumo en ${monthLabel(month)}`,
+      description: "Wh por medición · cada fila combina una condición climática y una franja del día.",
+      insight: best ? `En ${monthLabel(month)}, la combinación con más generación renovable es «${best.label}» (${whValue(best.value)} por medición entre solar y eólica).` : null,
       type: "bar",
       unit: "Wh por medición",
       series
@@ -340,7 +592,10 @@
     section.append(header);
     const grid = document.createElement("div");
     grid.className = "exploration-charts";
-    category.charts.forEach(spec => charts.set(spec.id, draw(grid, spec)));
+    category.charts.forEach(spec => {
+      const drawn = spec.share ? drawShare(grid, spec, sharedPeriod(currentData)) : draw(grid, spec);
+      if (drawn) charts.set(spec.id, drawn);
+    });
     section.append(grid);
     container.append(section);
   }
@@ -543,26 +798,52 @@
     const grid = document.createElement("div");
     grid.className = "featured-charts-grid";
 
+    // Energía en la unidad legible más cercana (Wh, kWh o MWh).
+    const energy = value => {
+      if (!Number.isFinite(value)) return ["Sin datos", ""];
+      if (Math.abs(value) >= 1e6) return [number.format(value / 1e6), "MWh"];
+      if (Math.abs(value) >= 1e3) return [number.format(value / 1e3), "kWh"];
+      return [number.format(value), "Wh"];
+    };
+    const [solarValue, solarUnit] = energy(shared ? shared.solar : NaN);
+    const [windValue, windUnit] = energy(shared ? shared.wind : NaN);
     const metricsBox = document.createElement("div");
     metricsBox.className = "featured-metrics";
     [
-      ["Generación solar", shared ? number.format(shared.solar) : "Sin datos", "Wh en el período común"],
-      ["Generación eólica", shared ? number.format(shared.wind) : "Sin datos", "Wh en el período común"],
-      ["Cobertura renovable", shared && shared.coverage !== null ? number.format(shared.coverage) : "Sin datos", "% del consumo"]
-    ].forEach(([label, value, unit]) => {
+      ["Cobertura renovable", shared && shared.coverage !== null ? `${number.format(shared.coverage)} %` : "Sin datos", "del consumo, solar + eólica", "metric-item metric-item--hero"],
+      ["Generación solar", solarValue, `${solarUnit} en el período común`.trim(), "metric-item", COLORS.solar],
+      ["Generación eólica", windValue, `${windUnit} en el período común`.trim(), "metric-item", COLORS.eolica]
+    ].forEach(([label, value, unit, className, color]) => {
       const item = document.createElement("div");
-      item.className = "metric-item";
-      item.append(text("span", label, "metric-label"), text("strong", value, "metric-value"), text("span", unit, "metric-unit"));
+      item.className = className;
+      const labelElement = text("span", "", "metric-label");
+      if (color) {
+        const key = text("span", "", "metric-key");
+        key.style.background = color;
+        labelElement.append(key);
+      }
+      labelElement.append(document.createTextNode(label));
+      item.append(labelElement, text("strong", value, "metric-value"), text("span", unit, "metric-unit"));
       metricsBox.append(item);
     });
+
+    const solarRows = series[0].rows;
+    const windLookup = new Map(series[1].rows.map(row => [row.label, row]));
+    const windHours = solarRows.filter(row => {
+      const windRow = windLookup.get(row.label);
+      return Number.isFinite(row.value) && windRow && Number.isFinite(windRow.value) && windRow.value > row.value;
+    }).map(row => parseInt(row.label, 10));
 
     grid.append(metricsBox);
     section.append(grid);
     featuredContainer.append(section);
     charts.set("grafica-energia-hora", draw(grid, {
       id: "grafica-energia-hora",
+      tall: true,
+      nightBands: true,
       title: "Perfil horario: solar, eólica y consumo",
-      description: `Wh por medición en cada hora del día. Muestra en qué horas cada fuente cubre la demanda.${shared ? ` Período común de las dos fuentes: ${day(shared.start)} a ${day(shared.end)}.` : ""}`,
+      description: `Wh por medición en cada hora del día; la zona gris marca las horas sin sol.${shared ? ` Período común de las dos fuentes: ${day(shared.start)} a ${day(shared.end)}.` : ""}`,
+      insight: windHours.length ? `La eólica supera a la solar en ${windHours.length} de 24 horas (${hourRanges(windHours)}): es la fuente que sostiene la noche.` : "La solar supera a la eólica en todas las horas con datos.",
       type: "line",
       unit: "Wh por medición",
       xTitle: "Hora del día",
@@ -592,7 +873,11 @@
       option.value = month;
       monthSelect.append(option);
     });
+    // Por defecto, el mes más reciente con generación solar y eólica, para que la comparación tenga ambas fuentes.
+    const complete = months.filter(month => data.grupos.some(group => (group.mes || "Sin dato") === month && Number(group.generacion_no_nula) > 0)
+      && data.grupos.some(group => (group.mes || "Sin dato") === month && Number(group.eolica_no_nula) > 0));
     if (months.includes(selected)) monthSelect.value = selected;
+    else if (complete.length) monthSelect.value = complete[complete.length - 1];
     else if (months.length) monthSelect.value = months[months.length - 1];
     if (months.length) renderCombined();
     else document.getElementById("combined-chart").replaceChildren(text("p", "No hay datos mensuales suficientes para esta comparación."));
@@ -623,6 +908,7 @@
       if (!ChartClass) {
         const chartModule = await import("https://cdn.jsdelivr.net/npm/chart.js@4.4.8/auto/+esm");
         ChartClass = chartModule.default;
+        applyChartDefaults();
       }
       render(data);
     } catch (error) {
